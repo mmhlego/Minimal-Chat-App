@@ -9,8 +9,8 @@ type Props = {
 
 export default function ChatSection({ chatId, back, className }: Props) {
 	return (
-		<div className={twMerge("w-full h-full bg-blue/20", className)}>
-			<Button text="Back" onClick={back} />
+		<div className={twMerge("w-full h-full bg-blue/70 p-5 text-white", className)}>
+			<Button accent="orange" text="Back" onClick={back} />
 			Selected Chat Id: {chatId ? chatId : "None"}
 		</div>
 	);
