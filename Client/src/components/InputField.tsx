@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PrimaryColors } from "../models/Types";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 type Props = {
 	label?: string;
+	initialValue?: string;
 	placeholder?: string;
 	accent?: "" | PrimaryColors;
 	hint?: string;
@@ -11,21 +13,31 @@ type Props = {
 	rtl?: boolean;
 	className?: string;
 	onChange?: (value: string) => void;
+	schema?: z.ZodType;
 };
 
 export default function InputField({
 	label = "",
+	initialValue = "",
 	placeholder = "",
 	accent = "",
 	hint = "",
 	disabled = false,
 	rtl = false,
 	className,
-	onChange
+	onChange,
+	schema
 }: Props) {
-	const color = disabled ? "gray-300" : accent === "" ? "gray-400" : accent;
+	const [color, setColor] = useState(disabled ? "gray-300" : accent === "" ? "gray-400" : accent);
 
-	const [value, setValue] = useState("");
+	const [currentValue, setCurrentValue] = useState(initialValue);
+	const [focused, setFocused] = useState(false);
+
+	useEffect(() => {
+		if (schema && focused) {
+			setColor(schema.safeParse(currentValue).success ? "green" : "red");
+		}
+	}, [currentValue]);
 
 	return (
 		<div
@@ -40,17 +52,18 @@ export default function InputField({
 			<p
 				className={twMerge(
 					`absolute duration-300 bg-white pointer-events-none mt-0.5`,
-					value ? "-mt-4 font-normal text-xs" : "mx-1.5 font-semibold text-sm",
+					currentValue ? "-mt-4 font-normal text-xs" : "mx-1.5 font-semibold text-sm",
 					`after:absolute after:left-0 after:bg-${color}/10 after:w-full after:bottom-0 after:duration-300`,
-					value ? `after:h-1/2` : `after:h-full`,
+					currentValue ? `after:h-1/2` : `after:h-full`,
 					disabled ? "text-gray-400" : ""
 				)}>
 				{label}
 			</p>
 			<input
-				value={value}
+				value={currentValue}
 				onChange={(e) => {
-					setValue(e.target.value);
+					setFocused(true);
+					setCurrentValue(e.target.value);
 					onChange && onChange(e.target.value);
 				}}
 				className={twMerge(
