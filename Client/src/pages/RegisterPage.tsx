@@ -1,4 +1,3 @@
-import { ArrowRight } from "iconsax-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -6,8 +5,6 @@ import "react-toastify/dist/ReactToastify.css";
 import z from "zod";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
-import Loading from "../components/Loading";
-import { usePostApi } from "../hooks/UseApi";
 
 type Props = {};
 
@@ -31,27 +28,27 @@ export default function RegisterPage({}: Props) {
 
 	const navigate = useNavigate();
 
-	const [res, register] = usePostApi<string>(
-		"/register",
-		() => {
-			toast.success("Success. Logging in...", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
-
-			setTimeout(() => navigate("/home"), 4000);
-		},
-		() => {
-			toast.error("An Error Occurred", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
-		}
-	);
+	// 	const [res, register] = usePostApi<string>(
+	// 		"/register",
+	// 		() => {
+	// 			toast.success("Success. Logging in...", {
+	// 				position: "bottom-right",
+	// 				autoClose: 3000,
+	// 				closeOnClick: false,
+	// 				pauseOnHover: false
+	// 			});
+	//
+	// 			setTimeout(() => navigate("/home"), 4000);
+	// 		},
+	// 		() => {
+	// 			toast.error("An Error Occurred", {
+	// 				position: "bottom-right",
+	// 				autoClose: 3000,
+	// 				closeOnClick: false,
+	// 				pauseOnHover: false
+	// 			});
+	// 		}
+	// 	);
 
 	return (
 		<div className="w-screen h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue to-purple p-2">
@@ -108,13 +105,13 @@ export default function RegisterPage({}: Props) {
 				<Button
 					accent="green"
 					noBorder
-					disabled={res.loading}
+					// disabled={res.loading}
 					onClick={() => {
 						const data = { username, password, firstName, lastName, avatar };
 						const res = formSchema.safeParse(data);
 
 						if (res.success) {
-							register(data);
+							// register(data);
 						} else {
 							console.log(res.error.errors[0].message);
 
@@ -127,14 +124,14 @@ export default function RegisterPage({}: Props) {
 						}
 					}}
 					className="w-full py-1.5 gap-1 hover:gap-2.5">
-					{res.loading ? (
+					{/* {res.loading ? (
 						<Loading size="small" />
 					) : (
 						<>
 							Register
 							<ArrowRight size={18} />
 						</>
-					)}
+					)} */}
 				</Button>
 
 				<span className="text-sm -mt-2 -mb-5">

@@ -2,9 +2,10 @@ import { twMerge } from "tailwind-merge";
 
 type Props = {
 	name: string;
+	className?: string;
 };
 
-export default function ChatIcon({ name }: Props) {
+export default function ChatIcon({ name, className }: Props) {
 	const words = name.toUpperCase().split(" ");
 	const abbreviation =
 		words.length >= 2
@@ -25,7 +26,8 @@ export default function ChatIcon({ name }: Props) {
 		<div
 			className={twMerge(
 				"row-span-2 col-span-1 h-10 w-10 rounded-full border-2 border-gray-200 flex items-center justify-center",
-				gradients[abbreviation.charCodeAt(0) % gradients.length]
+				gradients[abbreviation.charCodeAt(0) % gradients.length],
+				className
 			)}>
 			<p className="text-lg font-medium">{abbreviation}</p>
 		</div>

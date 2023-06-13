@@ -1,4 +1,4 @@
-import { Add, ArrowRight2, Profile, SearchNormal } from "iconsax-react";
+import { Add } from "iconsax-react";
 import Button from "./Button";
 import { useEffect, useState } from "react";
 import Header from "./Header";
@@ -20,7 +20,7 @@ export default function ChatList({ selectedChatId, setChatId }: Props) {
 			UnreadMessageCount: 5,
 			LastMessage: "سلام خوبی؟",
 			LastSendDate: new Date(2023, 5, 6, 2, 21, 15).toISOString(),
-			Type: "Chat"
+			Type: "Private"
 		},
 		{
 			ChatId: 2,
@@ -36,13 +36,13 @@ export default function ChatList({ selectedChatId, setChatId }: Props) {
 			UnreadMessageCount: 1,
 			LastMessage: "سلام",
 			LastSendDate: new Date(2022, 5, 5, 12, 21, 15).toISOString(),
-			Type: "Chat"
+			Type: "Private"
 		},
 		{
 			ChatId: 4,
 			Name: "Mehdi Okhravi",
 			UnreadMessageCount: 0,
-			Type: "Chat"
+			Type: "Private"
 		}
 	]);
 

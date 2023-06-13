@@ -2,6 +2,7 @@ import Button from "../components/Button";
 import CheckBox from "../components/CheckBox";
 import InputField from "../components/InputField";
 import Loading from "../components/Loading";
+import Message from "../components/Message";
 import RadioButton from "../components/RadioButton";
 import TestSection from "../components/TestSection";
 
@@ -41,6 +42,39 @@ export default function TestPage() {
 				<RadioButton checked label="First Item" group="g1" />
 				<RadioButton label="Second Item" group="g1" />
 				<RadioButton label="Third Item" group="g1" />
+			</TestSection>
+
+			<TestSection dir="flex-col">
+				<Message
+					message={{
+						Id: 1,
+						SendDate: "2023-06-08T15:30:00.000Z",
+						Body: "سلام چطوری؟",
+						Sender: {
+							Username: "Mehdi Okh",
+							LastSeen: "2023-06-08T15:30:00.000Z",
+							AvatarUrl: ""
+						},
+						Attachments: []
+					}}
+					fromUser={false}
+					selectMessage={console.log}
+				/>
+				<Message
+					message={{
+						Id: 2,
+						SendDate: "2023-06-08T15:31:00.000Z",
+						Body: "مرسی چطوری؟",
+						Sender: {
+							Username: "MMHLEGO",
+							LastSeen: "2023-06-08T15:30:00.000Z",
+							AvatarUrl: ""
+						},
+						Attachments: []
+					}}
+					fromUser={true}
+					selectMessage={console.log}
+				/>
 			</TestSection>
 		</div>
 	);

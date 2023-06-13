@@ -1,12 +1,8 @@
-import { ArrowRight } from "iconsax-react";
+import { useState } from "react";
+import { useNavigate } from "react-router";
+import "react-toastify/dist/ReactToastify.css";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
-import { usePostApi } from "../hooks/UseApi";
-import { useState } from "react";
-import Loading from "../components/Loading";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { useNavigate } from "react-router";
 
 type Props = {};
 
@@ -16,27 +12,27 @@ export default function LoginPage({}: Props) {
 
 	const navigate = useNavigate();
 
-	const [res, login] = usePostApi<string>(
-		"/login",
-		() => {
-			toast.success("Success. Redirecting...", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
-
-			setTimeout(() => navigate("/home"), 4000);
-		},
-		() => {
-			toast.error("An Error Occurred", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
-		}
-	);
+	// 	const [res, login] = usePostApi<string>(
+	// 		"/login",
+	// 		() => {
+	// 			toast.success("Success. Redirecting...", {
+	// 				position: "bottom-right",
+	// 				autoClose: 3000,
+	// 				closeOnClick: false,
+	// 				pauseOnHover: false
+	// 			});
+	//
+	// 			setTimeout(() => navigate("/home"), 4000);
+	// 		},
+	// 		() => {
+	// 			toast.error("An Error Occurred", {
+	// 				position: "bottom-right",
+	// 				autoClose: 3000,
+	// 				closeOnClick: false,
+	// 				pauseOnHover: false
+	// 			});
+	// 		}
+	// 	);
 
 	return (
 		<div className="w-screen h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-green to-cyan p-2">
@@ -59,19 +55,19 @@ export default function LoginPage({}: Props) {
 				<Button
 					accent="green"
 					noBorder
-					disabled={res.loading}
+					// disabled={res.loading}
 					onClick={() => {
-						login({ username, password });
+						// login({ username, password });
 					}}
 					className="w-full py-1.5 gap-1 hover:gap-2.5">
-					{res.loading ? (
+					{/* {res.loading ? (
 						<Loading size="small" />
 					) : (
 						<>
 							Login
 							<ArrowRight size={18} />
 						</>
-					)}
+					)} */}
 				</Button>
 
 				<span className="text-sm -mt-2 -mb-5">

@@ -13,11 +13,16 @@
 	margin: 0;
 	scroll-behavior: smooth;
 	scroll-margin: 2rem;
+
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
 }
 
 body {
 	width: 100vw;
-	overflow-x: hidden;
+	height: 100vh;
+	overflow: hidden;
 }
 
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@100;200;300;400;500;600;700;800;900&display=swap");
@@ -39,13 +44,20 @@ body {
 
 ::-webkit-scrollbar {
 	background: transparent;
-	width: 12px;
-	height: 12px;
+	width: 8px;
+	height: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
 	background-color: #2388ffc0;
+	background-color: #ffffffe0;
 	background-clip: padding-box;
 	border: 2px solid transparent;
 	border-radius: 10px;
+}
+
+.ellipsis {
+	text-overflow: ellipsis; /* enables ellipsis */
+	white-space: nowrap; /* keeps the text in a single line */
+	overflow: hidden; /* keeps the element from overflowing its parent */
 }

@@ -1,7 +1,11 @@
+import ChatAttachment from "./ChatAttachment";
+import ChatUser from "./ChatUser";
+
 export default interface ChatMessage {
 	Id: number;
 	Body: string;
-	SendDate: Date;
-	Username: string;
-	AvatarUrl: string;
+	ReplyTo?: number;
+	SendDate: string;
+	Sender: ChatUser;
+	Attachments: ChatAttachment[];
 }

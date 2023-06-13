@@ -15,7 +15,7 @@ export default function NotFoundPage() {
 				<span className="">Your requested page was not found.</span>
 				<Button
 					accent="orange"
-					className="py-2 gap-3 hover:bg-cyan/10 hover:text-cyan mt-2 -mb-4"
+					className="py-2 gap-3 hover:bg-orange/10 hover:text-orange mt-2 -mb-4"
 					onClick={() => navigate("/home")}>
 					<Home2 variant="Bold" />
 					Go Home

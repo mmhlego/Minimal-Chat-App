@@ -4,5 +4,7 @@ export default interface ChatInfo {
 	UnreadMessageCount: number;
 	LastMessage?: string;
 	LastSendDate?: string;
-	Type: "Group" | "Chat";
+	Type: ChatTypes;
 }
+
+export type ChatTypes = "Group" | "Private";
