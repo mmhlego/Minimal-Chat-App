@@ -25,11 +25,12 @@ export default function ChatIcon({ name, className }: Props) {
 	return (
 		<div
 			className={twMerge(
-				"row-span-2 col-span-1 h-10 w-10 rounded-full border-2 border-gray-200 flex items-center justify-center",
+				"row-span-2 col-span-1 h-10 w-10 rounded-full border border-gray-200 flex items-center justify-center",
+				"text-lg font-medium",
 				gradients[abbreviation.charCodeAt(0) % gradients.length],
 				className
 			)}>
-			<p className="text-lg font-medium">{abbreviation}</p>
+			<p>{abbreviation}</p>
 		</div>
 	);
 }

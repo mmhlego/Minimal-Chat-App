@@ -42,6 +42,12 @@ body {
 		"Courier New", monospace;
 }
 
+.ellipsis {
+	text-overflow: ellipsis; /* enables ellipsis */
+	white-space: nowrap; /* keeps the text in a single line */
+	overflow: hidden; /* keeps the element from overflowing its parent */
+}
+
 ::-webkit-scrollbar {
 	background: transparent;
 	width: 8px;
@@ -49,15 +55,20 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-	background-color: #2388ffc0;
 	background-color: #ffffffe0;
 	background-clip: padding-box;
 	border: 2px solid transparent;
 	border-radius: 10px;
 }
 
-.ellipsis {
-	text-overflow: ellipsis; /* enables ellipsis */
-	white-space: nowrap; /* keeps the text in a single line */
-	overflow: hidden; /* keeps the element from overflowing its parent */
+.dark-scroll {
+	&::-webkit-scrollbar-thumb {
+		background-color: #b0b0b0e0;
+	}
+}
+
+.blue-scroll {
+	&::-webkit-scrollbar-thumb {
+		background-color: #2388ffc0;
+	}
 }

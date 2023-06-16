@@ -59,7 +59,7 @@ export default function ChatList({ selectedChatId, setChatId }: Props) {
 			<Header setSearchText={setSearchText} />
 			<NewChatButton />
 
-			<div className="w-full h-full overflow-y-auto">
+			<div className="w-full h-full overflow-y-auto blue-scroll">
 				{filteredList.length === 0 && (
 					<p className="text-center p-4 italic">No Chats Were Found ...</p>
 				)}

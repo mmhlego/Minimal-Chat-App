@@ -4,17 +4,21 @@ import {
 	Back,
 	BackSquare,
 	CloseCircle,
+	Copy,
 	Send,
 	TrushSquare
 } from "iconsax-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { useIsVisible } from "../hooks/UseIsVisible";
 import ChatInfo from "../models/ChatInfo";
 import ChatMessage from "../models/ChatMessage";
+import ChatInfoPopup from "../popups/ChatInfoPopup";
+import { scrollToEnd } from "../utils/ScrollUtils";
 import Button from "./Button";
 import ChatIcon from "./ChatIcon";
 import Message from "./Message";
+import { toast } from "react-toastify";
 
 type Props = {
 	chatId: number;
@@ -23,15 +27,7 @@ type Props = {
 };
 
 export default function ChatSection({ chatId, back, className }: Props) {
-	const [newMessage, setNewMessage] = useState("");
-	const [contextPos, setContextPos] = useState({ x: 0, y: 0 });
-	const [selectedMessage, setSelectedMessage] = useState(-1);
-	const [contextVisible, setContextVisible] = useState(false);
-	const [messages, setMessages] = useState<ChatMessage[]>([]);
-	const [replyMessage, setReplyMessage] = useState<ChatMessage | undefined>(undefined);
-	const containerRef = useRef<HTMLDivElement>(null);
-	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
-
+	// Chat Body
 	const [chatInfo, setChatInfo] = useState<ChatInfo>({
 		ChatId: 1,
 		Name: "Sample Chat",
@@ -40,29 +36,31 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		LastSendDate: new Date(2023, 5, 6, 2, 21, 15).toISOString(),
 		Type: "Group"
 	});
+	const [messages, setMessages] = useState<ChatMessage[]>([]);
+	const containerRef = useRef<HTMLDivElement>(null);
 
-	const scrollToEnd = () => {
-		if (containerRef.current) {
-			containerRef.current.scrollTo({
-				top: containerRef.current.scrollHeight,
-				behavior: "smooth"
-			});
-		}
-	};
+	// Message States
+	const [newMessage, setNewMessage] = useState("");
+	const [replyMessage, setReplyMessage] = useState<ChatMessage | undefined>(undefined);
 
-	const scrollToMessage = (id: string) => {
-		const component = document.getElementById(id);
-		if (!component) return;
+	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
 
-		const dist = component.getBoundingClientRect().top;
+	// Context Menu
+	const [selectedMessage, setSelectedMessage] = useState(-1);
+	const [contextVisible, setContextVisible] = useState(false);
+	const contextPos = useMemo(() => {
+		const component = document.getElementById(selectedMessage.toString());
+		if (!component) return { x: undefined, y: undefined };
 
-		if (containerRef.current) {
-			containerRef.current.scrollTo({
-				top: containerRef.current.scrollTop + dist - 60,
-				behavior: "smooth"
-			});
-		}
-	};
+		const y = Math.max(component.getBoundingClientRect().top, 60) + 5;
+		const x = component.getBoundingClientRect().left + 5;
+
+		setContextVisible(true);
+		return { x, y };
+	}, [selectedMessage]);
+
+	// Popups
+	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
 	const sendMessage = () => {
 		const newMessageBody = newMessage.trim();
@@ -70,7 +68,11 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		setReplyMessage(undefined);
 
 		//TODO: Send Message (text + reply)
-		console.log(newMessageBody);
+	};
+
+	const closeContextMenu = () => {
+		setContextVisible(false);
+		setTimeout(() => setSelectedMessage(-1), 200);
 	};
 
 	//TODO: Remove
@@ -189,37 +191,19 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		]);
 	}, [chatId]);
 
-	//TODO: Uncomment
-	// useEffect(() => {
-	// 	setNewMessage("");
-	// 	setSelectedMessage(-1);
-	// 	setContextVisible(false);
-	// 	setMessages([]);
-	// }, [chatId]);
-
 	useEffect(() => {
-		setTimeout(scrollToEnd, 100);
+		setNewMessage("");
+		setSelectedMessage(-1);
+		setContextVisible(false);
+		setChatInfoVisible(false);
+		// setMessages([]); //TODO
+
+		setTimeout(() => scrollToEnd(containerRef), 100);
 	}, [chatId]);
-
-	useEffect(() => {
-		const component = document.getElementById(selectedMessage.toString());
-		if (!component) return;
-
-		const y = Math.max(component.getBoundingClientRect().top, 60) + 5;
-		const x = component.getBoundingClientRect().left + 5;
-
-		setContextPos({ x, y });
-		setContextVisible(true);
-	}, [selectedMessage]);
 
 	useEffect(() => {
 		console.log(endIsVisible);
 	}, [endIsVisible]);
-
-	const closeContextMenu = () => {
-		setContextVisible(false);
-		setSelectedMessage(-1);
-	};
 
 	if (chatId == -1) {
 		return (
@@ -254,8 +238,12 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					<Back />
 				</Button>
 
-				<ChatIcon name={chatInfo.Name} className="border-none" />
-				<p>{chatInfo.Name}</p>
+				<div
+					className="flex items-center gap-2 pr-5 cursor-pointer"
+					onClick={() => setChatInfoVisible(true)}>
+					<ChatIcon name={chatInfo.Name} className="border-none" />
+					<p>{chatInfo.Name}</p>
+				</div>
 			</div>
 
 			{/* Messages List */}
@@ -280,7 +268,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						"fixed bottom-16 text-gray-700 p-1 bg-white border-gray-400/20",
 						endIsVisible ? "-right-16" : "right-4"
 					)}
-					onClick={scrollToEnd}>
+					onClick={() => scrollToEnd(containerRef)}>
 					<ArrowDown2 />
 				</Button>
 			</div>
@@ -344,13 +332,34 @@ export default function ChatSection({ chatId, back, className }: Props) {
 			<div
 				className={twMerge(
 					"absolute duration-300 w-full h-full bg-black/30 z-30",
-					contextVisible ? " opacity-100" : " opacity-0 pointer-events-none"
+					contextVisible && contextPos.x
+						? " opacity-100"
+						: " opacity-0 pointer-events-none"
 				)}
 				onClick={closeContextMenu}
 				onContextMenu={closeContextMenu}>
 				<div
 					className="bg-white rounded-lg border-white border-b fixed flex flex-col"
 					style={{ top: contextPos.y, left: contextPos.x }}>
+					<Button
+						text="Copy"
+						accent="white"
+						className="text-black hover:bg-gray-200 gap-8 shadow-none justify-between pr-1.5"
+						noBorder
+						onClick={() => {
+							const message = messages.find((v) => v.Id == selectedMessage);
+							if (message) {
+								navigator.clipboard.writeText(message.Body);
+								toast.success("Coppied to clipboard", {
+									position: "bottom-right",
+									pauseOnHover: false,
+									autoClose: 1000,
+									theme: "colored"
+								});
+							}
+						}}>
+						<Copy />
+					</Button>
 					<Button
 						text="Reply"
 						accent="white"
@@ -372,6 +381,13 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					</Button>
 				</div>
 			</div>
+
+			{/* Chat Info */}
+			<ChatInfoPopup
+				chatInfo={chatInfo}
+				visible={chatInfoVisible}
+				closePopup={() => setChatInfoVisible(false)}
+			/>
 		</div>
 	);
 }
