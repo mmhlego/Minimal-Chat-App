@@ -5,16 +5,19 @@ import { twMerge } from "tailwind-merge";
 import InputField from "./InputField";
 
 type Props = {
+	openProfile: () => void;
 	setSearchText: (text: string) => void;
 };
 
-export default function Header({ setSearchText }: Props) {
+export default function Header({ openProfile, setSearchText }: Props) {
 	const [opened, setOpened] = useState(false);
 
 	return (
 		<div className="w-full h-fit bg-gradient-to-br from-green to-cyan">
 			<div className="flex p-2 gap-2 items-center justify-between border-b-2 border-b-white/50">
-				<Button className="p-2 bg-transparent border-none shadow-none">
+				<Button
+					className="p-2 bg-transparent border-none shadow-none"
+					onClick={openProfile}>
 					<Profile variant="Bold" />
 				</Button>
 				<p className="text-white font-medium">Conversations List</p>

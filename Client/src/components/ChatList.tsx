@@ -7,10 +7,11 @@ import ChatItem from "./ChatItem";
 
 type Props = {
 	selectedChatId?: number;
+	openProfile: () => void;
 	setChatId: (id: number) => void;
 };
 
-export default function ChatList({ selectedChatId, setChatId }: Props) {
+export default function ChatList({ selectedChatId, openProfile, setChatId }: Props) {
 	const [searchText, setSearchText] = useState("");
 
 	const [chatList, setChatList] = useState<ChatInfo[]>([
@@ -56,7 +57,7 @@ export default function ChatList({ selectedChatId, setChatId }: Props) {
 
 	return (
 		<div className="relative h-screen min-h-min flex flex-col">
-			<Header setSearchText={setSearchText} />
+			<Header openProfile={openProfile} setSearchText={setSearchText} />
 			<NewChatButton />
 
 			<div className="w-full h-full overflow-y-auto blue-scroll">

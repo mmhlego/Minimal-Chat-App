@@ -2,9 +2,9 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import z from "zod";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
+import { RegisterFormSchema } from "../utils/Schemas";
 
 type Props = {};
 
@@ -14,17 +14,6 @@ export default function RegisterPage({}: Props) {
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [avatar, setAvatar] = useState("https://i.pravatar.cc/50");
-
-	const formSchema = z.object({
-		username: z.string().min(8),
-		password: z
-			.string()
-			.min(8)
-			.refine((v) => /\d/.test(v) && /[A-Za-z]/.test(v)),
-		firstName: z.string().min(2),
-		lastName: z.string().min(2),
-		avatar: z.string().url()
-	});
 
 	const navigate = useNavigate();
 
@@ -59,7 +48,7 @@ export default function RegisterPage({}: Props) {
 					onChange={setUsername}
 					hint="At least 8 characters long"
 					className="w-full"
-					schema={formSchema.shape.username}
+					schema={RegisterFormSchema.shape.username}
 				/>
 
 				<InputField
@@ -67,14 +56,14 @@ export default function RegisterPage({}: Props) {
 					onChange={setPassword}
 					hint="At least 8 characters long"
 					className="w-full"
-					schema={formSchema.shape.password}
+					schema={RegisterFormSchema.shape.password}
 				/>
 
 				<InputField
 					label="Repeat Password"
 					hint="Must be same as password"
 					className="w-full"
-					schema={formSchema.shape.password.refine((v) => v == password)}
+					schema={RegisterFormSchema.shape.password.refine((v) => v == password)}
 				/>
 
 				<InputField
@@ -82,7 +71,7 @@ export default function RegisterPage({}: Props) {
 					onChange={setFirstName}
 					hint="At least 2 characters long"
 					className="w-full"
-					schema={formSchema.shape.firstName}
+					schema={RegisterFormSchema.shape.firstName}
 				/>
 
 				<InputField
@@ -90,7 +79,7 @@ export default function RegisterPage({}: Props) {
 					onChange={setLastName}
 					hint="At least 2 characters long"
 					className="w-full"
-					schema={formSchema.shape.lastName}
+					schema={RegisterFormSchema.shape.lastName}
 				/>
 
 				<InputField
@@ -99,7 +88,7 @@ export default function RegisterPage({}: Props) {
 					onChange={setAvatar}
 					hint="At least 8 characters long"
 					className="w-full"
-					schema={formSchema.shape.avatar}
+					schema={RegisterFormSchema.shape.avatar}
 				/>
 
 				<Button
@@ -108,7 +97,7 @@ export default function RegisterPage({}: Props) {
 					// disabled={res.loading}
 					onClick={() => {
 						const data = { username, password, firstName, lastName, avatar };
-						const res = formSchema.safeParse(data);
+						const res = RegisterFormSchema.safeParse(data);
 
 						if (res.success) {
 							// register(data);
