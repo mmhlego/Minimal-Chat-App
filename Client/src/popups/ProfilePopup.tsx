@@ -7,7 +7,7 @@ import InputField from "../components/InputField";
 import User from "../models/User";
 import { ProfileFormSchema } from "../utils/Schemas";
 import PopupContainer from "./PopupContainer";
-import { BackSquare, RefreshSquare } from "iconsax-react";
+import { Back, RefreshSquare } from "iconsax-react";
 import Loading from "../components/Loading";
 
 type Props = {
@@ -27,7 +27,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 	return (
 		<PopupContainer visible={visible} closePopup={() => {}}>
-			<div className="bg-white border border-gray-300 shadow-lg rounded-lg p-4 h-1/2 w-11/12 sm:w-1/2 lg:w-1/3 overflow-x-hidden overflow-y-auto text-black flex flex-col items-center gap-5 dark-scroll relative">
+			<div className="bg-white border border-gray-300 shadow-lg rounded-lg p-4 h-2/3 w-11/12 sm:w-1/2 lg:w-1/3 overflow-x-hidden overflow-y-auto text-black flex flex-col items-center gap-5 dark-scroll relative">
 				{profile.AvatarUrl ? (
 					<img
 						className={twMerge("h-16 w-16 rounded-full border border-gray-200")}
@@ -40,7 +40,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 					/>
 				)}
 
-				<h2 className="font-semibold text-2xl">Account Info:</h2>
+				<h2 className="font-semibold text-xl">Account Info:</h2>
 				<InputField
 					label="Username"
 					initialValue={profile.Username}
@@ -129,12 +129,12 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 				</Button>
 
 				<Button
-					accent="blue"
+					accent="white"
 					secondary
 					noBorder
 					onClick={closePopup}
-					className="absolute top-3 left-3 p-2 text-blue">
-					<BackSquare size={24} />
+					className="absolute top-3 left-3 p-0 text-gray-400 shadow-none">
+					<Back size={28} />
 				</Button>
 			</div>
 		</PopupContainer>

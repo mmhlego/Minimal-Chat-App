@@ -19,6 +19,7 @@ import Button from "./Button";
 import ChatIcon from "./ChatIcon";
 import Message from "./Message";
 import { toast } from "react-toastify";
+import Loading from "./Loading";
 
 type Props = {
 	chatId: number;
@@ -44,6 +45,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	const [replyMessage, setReplyMessage] = useState<ChatMessage | undefined>(undefined);
 
 	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
+	const [historyRef, historyIsVisible] = useIsVisible<HTMLDivElement>();
+	const [historyDate, setHistoryDate] = useState<Date>(new Date());
 
 	// Context Menu
 	const [selectedMessage, setSelectedMessage] = useState(-1);
@@ -63,9 +66,26 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
 	const sendMessage = () => {
-		const newMessageBody = newMessage.trim();
+		const body = newMessage.trim();
 		setNewMessage("");
 		setReplyMessage(undefined);
+
+		const message: ChatMessage = {
+			Id: messages.length + 1,
+			Body: body,
+			SendDate: new Date().toUTCString(),
+			ReplyTo: replyMessage?.Id,
+			Sender: {
+				Username: "MMHLEGO",
+				LastSeen: new Date().toUTCString(),
+				AvatarUrl: ""
+			},
+			Attachments: []
+		};
+
+		messages.push(message);
+
+		setTimeout(() => scrollToEnd(containerRef), 100);
 
 		//TODO: Send Message (text + reply)
 	};
@@ -80,7 +100,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		setMessages([
 			{
 				Id: 1,
-				SendDate: "2023-06-08T15:30:00.000Z",
+				SendDate: "2023-06-01T15:30:00.000Z",
 				Body: "سلام چطوری؟",
 				Sender: {
 					Username: "Mehdi Okh",
@@ -180,7 +200,18 @@ export default function ChatSection({ chatId, back, className }: Props) {
 			{
 				Id: 10,
 				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+				Body: "Last message :D",
+				Sender: {
+					Username: "Mehdi Okh",
+					LastSeen: "2023-06-12T15:30:00.000Z",
+					AvatarUrl: ""
+				},
+				Attachments: []
+			},
+			{
+				Id: 11,
+				SendDate: "2023-06-08T15:31:00.000Z",
+				Body: "Last message :/",
 				Sender: {
 					Username: "MMHLEGO",
 					LastSeen: "2023-06-12T15:30:00.000Z",
@@ -202,8 +233,22 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	}, [chatId]);
 
 	useEffect(() => {
+		console.log(historyRef);
+		console.log(endRef);
+	}, []);
+
+	useEffect(() => {
 		console.log(endIsVisible);
 	}, [endIsVisible]);
+
+	useEffect(() => {
+		if (historyIsVisible && messages.length > 0) {
+			const lastMessage = messages[0];
+
+			setHistoryDate(new Date(lastMessage.SendDate));
+			console.log(lastMessage.SendDate);
+		}
+	}, [historyIsVisible]);
 
 	if (chatId == -1) {
 		return (
@@ -250,6 +295,11 @@ export default function ChatSection({ chatId, back, className }: Props) {
 			<div
 				className="h-full max-h-full p-3 pb-0 overflow-y-scroll flex flex-col gap-2 relative"
 				ref={containerRef}>
+				<div ref={historyRef} className="grid place-items-center">
+					<Loading />
+				</div>
+
+				{/* {messages.slice(0, -1).map((m) => ( */}
 				{messages.map((m) => (
 					<div key={m.Id} ref={endRef} className="w-full flex flex-col">
 						<Message
@@ -260,6 +310,17 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						/>
 					</div>
 				))}
+
+				{/* {messages.length > 0 && (
+					<div key={messages.at(-1)!.Id} ref={endRef} className="w-full flex flex-col">
+						<Message
+							key={messages.at(-1)!.Id}
+							message={messages.at(-1)!}
+							fromUser={messages.at(-1)!.Sender.Username === "MMHLEGO"}
+							selectMessage={setSelectedMessage}
+						/>
+					</div>
+				)} */}
 
 				{/* Scroll To End */}
 				<Button

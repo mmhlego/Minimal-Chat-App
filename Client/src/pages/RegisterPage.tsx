@@ -13,7 +13,7 @@ export default function RegisterPage({}: Props) {
 	const [password, setPassword] = useState("");
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
-	const [avatar, setAvatar] = useState("https://i.pravatar.cc/50");
+	const [avatar, setAvatar] = useState("");
 
 	const navigate = useNavigate();
 

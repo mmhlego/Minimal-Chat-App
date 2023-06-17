@@ -1,5 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
-import App from "../App";
+import { Navigate, createBrowserRouter } from "react-router-dom";
 import HomePage from "../pages/HomePage";
 import LoginPage from "../pages/LoginPage";
 import NotFoundPage from "../pages/NotFoundPage";
@@ -9,7 +8,7 @@ import TestPage from "../pages/TestPage";
 export const router = createBrowserRouter([
 	{
 		path: "/",
-		element: <App />
+		element: <Navigate to="/login" />
 	},
 	{
 		path: "/login",
