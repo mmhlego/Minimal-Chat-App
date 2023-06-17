@@ -42,7 +42,6 @@ export async function GetProfile(): Promise<ResponseWrapper<User>> {
 
 export async function UpdateProfile(
 	username: string,
-	password: string,
 	email: string,
 	firstName: string,
 	lastName: string,
@@ -50,7 +49,6 @@ export async function UpdateProfile(
 ): Promise<ResponseWrapper<string>> {
 	const response = await axios.put("/", {
 		username,
-		password,
 		email,
 		firstName,
 		lastName,

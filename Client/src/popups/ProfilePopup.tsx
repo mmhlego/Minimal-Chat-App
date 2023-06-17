@@ -9,6 +9,8 @@ import { ProfileFormSchema } from "../utils/Schemas";
 import PopupContainer from "./PopupContainer";
 import { Back, RefreshSquare } from "iconsax-react";
 import Loading from "../components/Loading";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { GetProfile, UpdateProfile } from "../api/AuthApis";
 
 type Props = {
 	visible: boolean;
@@ -17,13 +19,75 @@ type Props = {
 
 export default function ProfilePopup({ visible, closePopup }: Props) {
 	const [profile, setProfile] = useState<User>({
-		Username: "mmhlego",
-		FirstName: "Mohammad mahdi",
-		LastName: "Hejazi",
-		Email: "mmhlego@gmail.com",
+		Username: "",
+		FirstName: "",
+		LastName: "",
+		Email: "",
 		AvatarUrl: ""
-		// AvatarUrl: "https://i.pravatar.cc/200"
 	});
+
+	const handleError = () => {
+		closePopup();
+		toast.error("An error occurred while loading your profile info", {
+			position: "bottom-right",
+			autoClose: 3000,
+			closeOnClick: false,
+			pauseOnHover: false
+		});
+	};
+
+	const { error, isLoading } = useQuery(["userProfile"], () => GetProfile(), {
+		cacheTime: 0,
+		onSuccess(data) {
+			if (data.Status === "Error") handleError();
+			else setProfile(data.Data);
+		},
+		onError() {
+			handleError();
+		}
+	});
+
+	const { mutate: updateProfile } = useMutation(
+		() =>
+			UpdateProfile(
+				profile.Username,
+				profile.Email,
+				profile.FirstName,
+				profile.LastName,
+				profile.AvatarUrl
+			),
+		{
+			onSuccess() {
+				toast.success("Success. Redirecting...", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			},
+			onError() {
+				toast.error("An Error Occurred", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			}
+		}
+	);
+
+	if (isLoading)
+		return (
+			<PopupContainer visible={visible} closePopup={() => {}}>
+				<div className="bg-white border border-gray-300 shadow-lg rounded-lg p-4">
+					<Loading size="medium" />
+				</div>
+			</PopupContainer>
+		);
+
+	if (error) {
+		return <></>;
+	}
 
 	return (
 		<PopupContainer visible={visible} closePopup={() => {}}>
@@ -99,13 +163,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<Button
 					accent="blue"
-					// disabled={res.loading}
 					onClick={() => {
-						const data = profile;
-						const res = ProfileFormSchema.safeParse(data);
+						const res = ProfileFormSchema.safeParse(profile);
 
 						if (res.success) {
-							// register(data);
+							updateProfile();
 						} else {
 							console.log(res.error.errors[0].message);
 
@@ -117,15 +179,9 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 							});
 						}
 					}}
-					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-blue/20 hover:text-blue">
-					{/* {res.loading ? (
-						<Loading size="small" />
-					) : (
-						<>
-							Update Information
-							<RefreshSquare size={18} />
-						</>
-					)} */}
+					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-blue/10 hover:text-blue">
+					Update Information
+					<RefreshSquare size={18} />
 				</Button>
 
 				<Button
