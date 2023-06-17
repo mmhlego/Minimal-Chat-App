@@ -6,6 +6,7 @@ export const RegisterFormSchema = z.object({
 		.string()
 		.min(8)
 		.refine((v) => /\d/.test(v) && /[A-Za-z]/.test(v)),
+	email: z.string().email(),
 	firstName: z.string().min(2),
 	lastName: z.string().min(2),
 	avatar: z.string().url().or(z.string().length(0))
@@ -13,6 +14,7 @@ export const RegisterFormSchema = z.object({
 
 export const ProfileFormSchema = z.object({
 	username: z.string().min(8),
+	email: z.string().email(),
 	firstName: z.string().min(2),
 	lastName: z.string().min(2),
 	avatar: z.string().url().or(z.string().length(0))

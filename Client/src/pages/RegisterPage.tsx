@@ -5,17 +5,47 @@ import "react-toastify/dist/ReactToastify.css";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import { RegisterFormSchema } from "../utils/Schemas";
+import { useMutation } from "@tanstack/react-query";
+import { Register } from "../api/AuthApis";
+import Loading from "../components/Loading";
+import { ArrowRight } from "iconsax-react";
 
 type Props = {};
 
 export default function RegisterPage({}: Props) {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
+	const [passwordR, setPasswordR] = useState("");
+	const [email, setEmail] = useState("");
 	const [firstName, setFirstName] = useState("");
 	const [lastName, setLastName] = useState("");
 	const [avatar, setAvatar] = useState("");
 
 	const navigate = useNavigate();
+
+	const { mutate: register, isLoading } = useMutation(
+		() => Register(username, password, email, firstName, lastName, avatar),
+		{
+			onSuccess() {
+				toast.success("Success. Redirecting...", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+
+				setTimeout(() => navigate("/home"), 4000);
+			},
+			onError() {
+				toast.error("An Error Occurred", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			}
+		}
+	);
 
 	// 	const [res, register] = usePostApi<string>(
 	// 		"/register",
@@ -61,9 +91,18 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Repeat Password"
+					onChange={setPasswordR}
 					hint="Must be same as password"
 					className="w-full"
 					schema={RegisterFormSchema.shape.password.refine((v) => v == password)}
+				/>
+
+				<InputField
+					label="Email Address"
+					onChange={setEmail}
+					hint="A valid email address"
+					className="w-full"
+					schema={RegisterFormSchema.shape.email}
 				/>
 
 				<InputField
@@ -94,14 +133,21 @@ export default function RegisterPage({}: Props) {
 				<Button
 					accent="green"
 					noBorder
-					// disabled={res.loading}
+					disabled={isLoading}
 					onClick={() => {
-						const data = { username, password, firstName, lastName, avatar };
+						const data = { username, password, email, firstName, lastName, avatar };
 						const res = RegisterFormSchema.safeParse(data);
 
-						if (res.success) {
-							// register(data);
-						} else {
+						if (res.success && password === passwordR) {
+							register();
+						} else if (password !== passwordR) {
+							toast.error("Repeat password is incorrect", {
+								position: "bottom-right",
+								autoClose: 3000,
+								closeOnClick: false,
+								pauseOnHover: false
+							});
+						} else if (!res.success) {
 							console.log(res.error.errors[0].message);
 
 							toast.error(res.error.errors[0].message, {
@@ -113,14 +159,14 @@ export default function RegisterPage({}: Props) {
 						}
 					}}
 					className="w-full py-1.5 gap-1 hover:gap-2.5">
-					{/* {res.loading ? (
+					{isLoading ? (
 						<Loading size="small" />
 					) : (
 						<>
 							Register
 							<ArrowRight size={18} />
 						</>
-					)} */}
+					)}
 				</Button>
 
 				<span className="text-sm -mt-2 -mb-5">
