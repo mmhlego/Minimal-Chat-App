@@ -18,23 +18,23 @@ export async function NewChat(
 	return response.data;
 }
 
-export async function GetChatInfo(chatId: string): Promise<ResponseWrapper<ChatInfo>> {
+export async function GetChatInfo(chatId: number): Promise<ResponseWrapper<ChatInfo>> {
 	const response = await axios.get(`/chats/${chatId}`);
 	return response.data;
 }
 
-export async function ChatSeen(chatId: string): Promise<ResponseWrapper<string>> {
+export async function ChatSeen(chatId: number): Promise<ResponseWrapper<string>> {
 	const response = await axios.put(`/chats/${chatId}/seen`);
 	return response.data;
 }
 
-export async function GetChatMembers(chatId: string): Promise<ResponseWrapper<ChatUser[]>> {
+export async function GetChatMembers(chatId: number): Promise<ResponseWrapper<ChatUser[]>> {
 	const response = await axios.get(`/chats/${chatId}/members`);
 	return response.data;
 }
 
 export async function AddChatMembers(
-	chatId: string,
+	chatId: number,
 	username: string
 ): Promise<ResponseWrapper<ChatUser[]>> {
 	const response = await axios.post(`/chats/${chatId}/members`, { username });
@@ -42,7 +42,7 @@ export async function AddChatMembers(
 }
 
 export async function GetChatHistory(
-	chatId: string,
+	chatId: number,
 	date: string,
 	count: number
 ): Promise<ResponseWrapper<ChatMessage[]>> {
@@ -54,7 +54,7 @@ export async function GetChatHistory(
 }
 
 export async function GetChatMessage(
-	chatId: string,
+	chatId: number,
 	messageId: string
 ): Promise<ResponseWrapper<ChatMessage[]>> {
 	const response = await axios.get(`/chats/${chatId}/messages/${messageId}`);
@@ -62,8 +62,8 @@ export async function GetChatMessage(
 }
 
 export async function DeleteChatMessage(
-	chatId: string,
-	messageId: string
+	chatId: number,
+	messageId: number
 ): Promise<ResponseWrapper<string>> {
 	const response = await axios.delete(`/chats/${chatId}/messages/${messageId}`);
 	return response.data;

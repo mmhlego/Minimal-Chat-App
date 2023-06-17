@@ -16,7 +16,7 @@ export default function Message({ message, fromUser, selectMessage }: Props) {
 		<div
 			id={message.Id.toString()}
 			className={twMerge(
-				"bg-white p-2 w-fit rounded-2xl relative border border-white/20 shadow-lg max-w-[95%]",
+				"bg-white p-2 w-fit rounded-2xl relative border border-white/20 shadow-lg max-w-[95%] duration-300",
 				"before:absolute before:border-8 before:border-transparent",
 				fromUser ? fromUserStyle : otherUserStyle
 			)}

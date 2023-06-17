@@ -20,6 +20,8 @@ import ChatIcon from "./ChatIcon";
 import Message from "./Message";
 import { toast } from "react-toastify";
 import Loading from "./Loading";
+import { useMutation } from "@tanstack/react-query";
+import { DeleteChatMessage } from "../api/ChatApis";
 
 type Props = {
 	chatId: number;
@@ -64,6 +66,44 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 	// Popups
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
+
+	// Apis
+	const { mutate: deleteSelectedMessage } = useMutation(
+		() => DeleteChatMessage(chatInfo.ChatId, selectedMessage),
+		{
+			onSuccess() {
+				const component = document.getElementById(selectedMessage.toString());
+				if (component) {
+					component.style.opacity = "0";
+					component.style.marginTop = `-${component.clientHeight}px`;
+
+					component
+						.animate([], {
+							duration: 300,
+							iterations: 1
+						})
+						.finished.then(() => {
+							messages.splice(
+								messages.findIndex((v) => v.Id === selectedMessage),
+								1
+							);
+							console.log(1213);
+						});
+				}
+
+				toast.success("Message deleted successfully", {
+					position: "bottom-right",
+					autoClose: 1000
+				});
+			},
+			onError() {
+				toast.error("An error ocurred", {
+					position: "bottom-right",
+					autoClose: 1000
+				});
+			}
+		}
+	);
 
 	const sendMessage = () => {
 		const body = newMessage.trim();
@@ -421,6 +461,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						}}>
 						<Copy />
 					</Button>
+
 					<Button
 						text="Reply"
 						accent="white"
@@ -431,13 +472,14 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						}}>
 						<BackSquare />
 					</Button>
+
 					<Button
 						text="Delete"
 						accent="red"
 						secondary
 						noBorder
 						className="text-red bg-red/20 hover:bg-red/30 gap-8 shadow-none justify-between pr-1.5"
-						onClick={() => {}}>
+						onClick={() => deleteSelectedMessage()}>
 						<TrushSquare />
 					</Button>
 				</div>
