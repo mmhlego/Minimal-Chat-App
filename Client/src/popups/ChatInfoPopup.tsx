@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { toast } from "react-toastify";
+import { GetChatMembers } from "../api/ChatApis";
 import ChatIcon from "../components/ChatIcon";
 import UserItem from "../components/Usertem";
 import ChatInfo from "../models/ChatInfo";
-import ChatUser from "../models/ChatUser";
 import PopupContainer from "./PopupContainer";
+import Loading from "../components/Loading";
 
 type Props = {
 	visible: boolean;
@@ -12,38 +14,22 @@ type Props = {
 };
 
 export default function ChatInfoPopup({ visible, chatInfo, closePopup }: Props) {
-	const [members, setMembers] = useState<ChatUser[]>([
+	const { data: members, isLoading: membersLoading } = useQuery(
+		[`${chatInfo.ChatId}-members`],
+		() => GetChatMembers(chatInfo.ChatId),
 		{
-			Username: "mmhlego",
-			AvatarUrl: "https://i.pravatar.cc/200",
-			LastSeen: "2023-06-15T12:30:00.000Z"
-		},
-		{
-			Username: "Alireza",
-			LastSeen: "2023-06-14T15:30:00.000Z",
-			AvatarUrl: ""
-		},
-		{
-			Username: "Ghanbari",
-			AvatarUrl: "https://i.pravatar.cc/200",
-			LastSeen: "2023-01-15T15:30:00.000Z"
-		},
-		{
-			Username: "Tabani",
-			LastSeen: "2023-06-01T15:30:00.000Z",
-			AvatarUrl: ""
-		},
-		{
-			Username: "Sample User",
-			AvatarUrl: "https://i.pravatar.cc/200",
-			LastSeen: "2023-06-11T15:30:00.000Z"
-		},
-		{
-			Username: "Mehdi Okh",
-			LastSeen: "2023-06-08T15:30:00.000Z",
-			AvatarUrl: ""
+			cacheTime: 0,
+			onError() {
+				closePopup();
+				toast.error("An error occurred while loading chat info", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			}
 		}
-	]);
+	);
 
 	return (
 		<PopupContainer visible={visible} closePopup={closePopup}>
@@ -55,15 +41,13 @@ export default function ChatInfoPopup({ visible, chatInfo, closePopup }: Props) 
 				</div>
 				<div className="border-b border-gray-500" />
 				<p className="text-center pt-1">Members List:</p>
+				{membersLoading && <Loading className="self-center mt-16" />}
 				<div className="flex flex-col">
-					{members
-						.sort(
-							(a, b) =>
-								new Date(b.LastSeen).getTime() - new Date(a.LastSeen).getTime()
-						)
-						.map((member) => (
-							<UserItem key={member.Username} info={member} />
-						))}
+					{members?.Data.sort(
+						(a, b) => new Date(b.LastSeen).getTime() - new Date(a.LastSeen).getTime()
+					).map((member) => (
+						<UserItem key={member.Username} info={member} />
+					))}
 				</div>
 			</div>
 		</PopupContainer>

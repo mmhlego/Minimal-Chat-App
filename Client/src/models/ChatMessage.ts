@@ -7,5 +7,5 @@ export default interface ChatMessage {
 	ReplyTo?: number;
 	SendDate: string;
 	Sender: ChatUser;
-	Attachments: ChatAttachment[];
+	Attachment?: ChatAttachment;
 }

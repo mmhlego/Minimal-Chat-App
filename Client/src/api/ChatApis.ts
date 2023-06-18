@@ -55,8 +55,8 @@ export async function GetChatHistory(
 
 export async function GetChatMessage(
 	chatId: number,
-	messageId: string
-): Promise<ResponseWrapper<ChatMessage[]>> {
+	messageId: number
+): Promise<ResponseWrapper<ChatMessage>> {
 	const response = await axios.get(`/chats/${chatId}/messages/${messageId}`);
 	return response.data;
 }
