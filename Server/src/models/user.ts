@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 export interface IUser extends Document {
 	username: string;
@@ -7,6 +7,8 @@ export interface IUser extends Document {
 	firstName: string;
 	lastName: string;
 	avatarUrl?: string;
+	lastSeen: Date;
+	chatIds: string[];
 }
 
 const userSchema = new Schema<IUser>({
@@ -16,6 +18,8 @@ const userSchema = new Schema<IUser>({
 	firstName: { type: String, required: true },
 	lastName: { type: String, required: true },
 	avatarUrl: String,
+	lastSeen: { type: Date },
+	chatIds: [{ type: Types.ObjectId, ref: "Chat" }],
 });
 
 export default model<IUser>("User", userSchema);
