@@ -22,7 +22,7 @@ export default function HomePage() {
 				chatId={selectedChat}
 				back={() => setSelectedChat(-1)}
 				className={twMerge(
-					"w-full h-screen absolute md:relative duration-500",
+					"w-full h-screen absolute md:relative",
 					selectedChat !== -1 ? "left-0" : "left-[100vw] md:left-0"
 				)}
 			/>

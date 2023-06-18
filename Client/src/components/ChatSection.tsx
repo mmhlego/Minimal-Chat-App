@@ -1,3 +1,4 @@
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
 	ArrowDown2,
 	AttachCircle,
@@ -9,19 +10,17 @@ import {
 	TrushSquare
 } from "iconsax-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge";
+import { DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
 import { useIsVisible } from "../hooks/UseIsVisible";
-import ChatInfo from "../models/ChatInfo";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
 import { scrollToEnd } from "../utils/ScrollUtils";
 import Button from "./Button";
 import ChatIcon from "./ChatIcon";
-import Message from "./Message";
-import { toast } from "react-toastify";
 import Loading from "./Loading";
-import { useMutation } from "@tanstack/react-query";
-import { DeleteChatMessage } from "../api/ChatApis";
+import Message from "./Message";
 
 type Props = {
 	chatId: number;
@@ -31,14 +30,6 @@ type Props = {
 
 export default function ChatSection({ chatId, back, className }: Props) {
 	// Chat Body
-	const [chatInfo, setChatInfo] = useState<ChatInfo>({
-		ChatId: 1,
-		Name: "Sample Chat",
-		UnreadMessageCount: 5,
-		LastMessage: "سلام خوبی؟",
-		LastSendDate: new Date(2023, 5, 6, 2, 21, 15).toISOString(),
-		Type: "Group"
-	});
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const containerRef = useRef<HTMLDivElement>(null);
 
@@ -48,7 +39,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
 	const [historyRef, historyIsVisible] = useIsVisible<HTMLDivElement>();
-	const [historyDate, setHistoryDate] = useState<Date>(new Date());
+	const [historyDate, setHistoryDate] = useState<string>(new Date().toUTCString());
+	const [historyAvailable, setHistoryAvailable] = useState(true);
 
 	// Context Menu
 	const [selectedMessage, setSelectedMessage] = useState(-1);
@@ -67,9 +59,65 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	// Popups
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
-	// Apis
+	// Apis // TODO
+	const { data: chatInfo } = useQuery([chatId], () => GetChatInfo(chatId), {
+		onSuccess(data) {
+			if (data.Status === "Error")
+				toast.error("An error occurred while loading your profile info", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+		},
+		onError() {
+			toast.error("An error occurred while loading your profile info", {
+				position: "bottom-right",
+				autoClose: 3000,
+				closeOnClick: false,
+				pauseOnHover: false
+			});
+		}
+	});
+
+	const loadCount = 10;
+	const { data: _, refetch: loadHistory } = useQuery(
+		[`${chatId}-${historyDate}`],
+		() => GetChatHistory(chatId, historyDate, loadCount),
+		{
+			onSuccess(res) {
+				if (res.Status === "Error") {
+					toast.error("An error occurred while loading chat history", {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+					return;
+				}
+
+				setMessages((m) => [...res.Data, ...m]);
+
+				if (loadCount !== res.Data.length) {
+					setHistoryAvailable(false);
+				} else {
+					setHistoryDate(res.Data[0].SendDate);
+				}
+			},
+			onError() {
+				toast.error("An error occurred while loading chat history", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			},
+			enabled: !!chatInfo
+		}
+	);
+
 	const { mutate: deleteSelectedMessage } = useMutation(
-		() => DeleteChatMessage(chatInfo.ChatId, selectedMessage),
+		() => DeleteChatMessage(chatId, selectedMessage),
 		{
 			onSuccess() {
 				const component = document.getElementById(selectedMessage.toString());
@@ -120,7 +168,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				LastSeen: new Date().toUTCString(),
 				AvatarUrl: ""
 			},
-			Attachments: []
+			Attachment: undefined // TODO
 		};
 
 		messages.push(message);
@@ -135,133 +183,6 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		setTimeout(() => setSelectedMessage(-1), 200);
 	};
 
-	//TODO: Remove
-	useEffect(() => {
-		setMessages([
-			{
-				Id: 1,
-				SendDate: "2023-06-01T15:30:00.000Z",
-				Body: "سلام چطوری؟",
-				Sender: {
-					Username: "Mehdi Okh",
-					LastSeen: "2023-06-08T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 2,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "مرسی چطوری؟",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 3,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "Mehdi Okh",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 4,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 5,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 6,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 7,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 8,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 9,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 10,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Last message :D",
-				Sender: {
-					Username: "Mehdi Okh",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			},
-			{
-				Id: 11,
-				SendDate: "2023-06-08T15:31:00.000Z",
-				Body: "Last message :/",
-				Sender: {
-					Username: "MMHLEGO",
-					LastSeen: "2023-06-12T15:30:00.000Z",
-					AvatarUrl: ""
-				},
-				Attachments: []
-			}
-		]);
-	}, [chatId]);
-
 	useEffect(() => {
 		setNewMessage("");
 		setSelectedMessage(-1);
@@ -273,20 +194,12 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	}, [chatId]);
 
 	useEffect(() => {
-		console.log(historyRef);
-		console.log(endRef);
-	}, []);
-
-	useEffect(() => {
 		console.log(endIsVisible);
 	}, [endIsVisible]);
 
 	useEffect(() => {
-		if (historyIsVisible && messages.length > 0) {
-			const lastMessage = messages[0];
-
-			setHistoryDate(new Date(lastMessage.SendDate));
-			console.log(lastMessage.SendDate);
+		if (historyIsVisible) {
+			loadHistory();
 		}
 	}, [historyIsVisible]);
 
@@ -299,6 +212,19 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					className
 				)}>
 				No Chat Selected...
+			</div>
+		);
+	}
+
+	if (chatInfo === undefined) {
+		return (
+			<div
+				className={twMerge(
+					"w-full h-full text-white border-l border-white/50",
+					"grid place-content-center text-xl font-medium italic bg-gradient-to-br from-green via-cyan to-blue",
+					className
+				)}>
+				<Loading />
 			</div>
 		);
 	}
@@ -326,8 +252,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				<div
 					className="flex items-center gap-2 pr-5 cursor-pointer"
 					onClick={() => setChatInfoVisible(true)}>
-					<ChatIcon name={chatInfo.Name} className="border-none" />
-					<p>{chatInfo.Name}</p>
+					<ChatIcon name={chatInfo.Data.Name} className="border-none" />
+					<p>{chatInfo?.Data.Name}</p>
 				</div>
 			</div>
 
@@ -335,32 +261,25 @@ export default function ChatSection({ chatId, back, className }: Props) {
 			<div
 				className="h-full max-h-full p-3 pb-0 overflow-y-scroll flex flex-col gap-2 relative"
 				ref={containerRef}>
-				<div ref={historyRef} className="grid place-items-center">
-					<Loading />
-				</div>
+				{historyAvailable && (
+					<div ref={historyRef} className="grid place-items-center">
+						<Loading />
+					</div>
+				)}
 
 				{/* {messages.slice(0, -1).map((m) => ( */}
 				{messages.map((m) => (
 					<div key={m.Id} ref={endRef} className="w-full flex flex-col">
 						<Message
 							key={m.Id}
+							chatId={chatInfo.Data.ChatId}
+							chatType={chatInfo.Data.Type}
 							message={m}
 							fromUser={m.Sender.Username === "MMHLEGO"}
 							selectMessage={setSelectedMessage}
 						/>
 					</div>
 				))}
-
-				{/* {messages.length > 0 && (
-					<div key={messages.at(-1)!.Id} ref={endRef} className="w-full flex flex-col">
-						<Message
-							key={messages.at(-1)!.Id}
-							message={messages.at(-1)!}
-							fromUser={messages.at(-1)!.Sender.Username === "MMHLEGO"}
-							selectMessage={setSelectedMessage}
-						/>
-					</div>
-				)} */}
 
 				{/* Scroll To End */}
 				<Button
@@ -487,7 +406,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 			{/* Chat Info */}
 			<ChatInfoPopup
-				chatInfo={chatInfo}
+				chatInfo={chatInfo.Data}
 				visible={chatInfoVisible}
 				closePopup={() => setChatInfoVisible(false)}
 			/>
