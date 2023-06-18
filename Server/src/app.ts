@@ -1,10 +1,16 @@
 import express, { Express, NextFunction, Request, Response } from "express";
 import mongoose from "mongoose";
 import authRouter from "./routes/auth";
+import profileRouter from "./routes/profile";
+import chatRouter from "./routes/chat";
 import bodyParser from "body-parser";
 
 export interface ResError extends Error {
 	status?: number;
+}
+
+export interface CustomReq extends Request {
+	userId: string;
 }
 
 const app: Express = express();
@@ -12,6 +18,8 @@ const port = 3000;
 
 app.use(bodyParser.json());
 app.use(authRouter);
+app.use(profileRouter);
+app.use(chatRouter);
 
 app.use(
 	(error: ResError, _req: Request, res: Response, _next: NextFunction) => {

@@ -2,7 +2,7 @@ import { RequestHandler } from "express";
 import User, { IUser } from "../models/user";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { ResError } from "../app";
+import { CustomReq, ResError } from "../app";
 
 const signup: RequestHandler = (req, res, next) => {
 	const username = req.body.username;
@@ -30,7 +30,8 @@ const signup: RequestHandler = (req, res, next) => {
 					email: result.email,
 					userId: result._id.toString(),
 				},
-				"somesupersecretsecret"
+				"somesupersecretsecret",
+				{ expiresIn: "365d" }
 			);
 			res.status(201).json({
 				status: "success",
@@ -89,4 +90,28 @@ const login: RequestHandler = (req, res, next) => {
 		});
 };
 
-export { login, signup };
+const isAuth: RequestHandler = (req, res, next) => {
+	const authHeader = req.get("Authorization");
+	if (!authHeader) {
+		const error = new Error("Not authenticated.") as ResError;
+		error.status = 401;
+		throw error;
+	}
+	const token = authHeader.split(" ")[1];
+	let decodedToken;
+	try {
+		decodedToken = jwt.verify(token, "somesupersecretsecret");
+	} catch (err: any) {
+		err.status = 500;
+		throw err;
+	}
+	if (!decodedToken) {
+		const error = new Error("Not authenticated.") as ResError;
+		error.status = 401;
+		throw error;
+	}
+	(req as CustomReq).userId = (decodedToken as { userId: string }).userId;
+	next();
+};
+
+export { login, signup, isAuth };

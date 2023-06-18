@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from "mongoose";
+import { IChat } from "./chat";
 
 export interface IUser extends Document {
 	username: string;
@@ -8,7 +9,7 @@ export interface IUser extends Document {
 	lastName: string;
 	avatarUrl?: string;
 	lastSeen: Date;
-	chatIds: string[];
+	chatIds: IChat["_id"][];
 }
 
 const userSchema = new Schema<IUser>({
