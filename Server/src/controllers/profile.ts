@@ -2,6 +2,7 @@ import { RequestHandler } from "express";
 import { CustomReq, ResError } from "../app";
 import User, { IUser } from "../models/user";
 import { Types } from "mongoose";
+import bcrypt from "bcrypt";
 
 export const getProfile: RequestHandler = (req, res, next) => {
 	const userId = (req as CustomReq).userId;
@@ -40,16 +41,20 @@ export const updateProfile: RequestHandler = (req, res, next) => {
 	const lastName = req.body.lastName;
 	const password = req.body.password;
 	const avatarUrl = req.body.avatarUrl;
-	User.updateOne(
-		{ _id: userId },
-		{
-			email,
-			firstName,
-			lastName,
-			avatarUrl,
-			password,
-		}
-	)
+	bcrypt
+		.hash(password, 12)
+		.then((hashedPw) => {
+			return User.updateOne(
+				{ _id: userId },
+				{
+					email,
+					firstName,
+					lastName,
+					avatarUrl,
+					password: hashedPw,
+				}
+			);
+		})
 		.then(() => {
 			res.status(200).json({
 				status: "success",

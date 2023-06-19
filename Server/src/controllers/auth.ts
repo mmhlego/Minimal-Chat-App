@@ -75,7 +75,7 @@ const login: RequestHandler = (req, res, next) => {
 					userId: loadedUser._id.toString(),
 				},
 				"somesupersecretsecret",
-				{ expiresIn: "1h" }
+				{ expiresIn: "365d" }
 			);
 			res.status(200).json({
 				status: "success",
