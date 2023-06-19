@@ -5,6 +5,7 @@ import User from "../models/user";
 import Message from "../models/message";
 
 export const createChat: RequestHandler = (req, res, next) => {
+	const userId = (req as CustomReq).userId;
 	const chatName = req.body.name;
 	const chatType = req.body.type;
 	const chatMembers = req.body.members;
@@ -14,6 +15,7 @@ export const createChat: RequestHandler = (req, res, next) => {
 				name: chatName,
 				type: chatType,
 				memberIds: users,
+				creatorId: userId,
 			});
 			chat.save();
 			users.forEach((user) => {
@@ -56,6 +58,7 @@ export const getChatList: RequestHandler = (req, res, next) => {
 			next(err);
 		});
 };
+
 export const getChat: RequestHandler = (req, res, next) => {
 	const chatId = req.params.chatId;
 	Chat.findOne({ _id: chatId })
@@ -77,6 +80,7 @@ export const getChat: RequestHandler = (req, res, next) => {
 			next(err);
 		});
 };
+
 export const getChatMembers: RequestHandler = (req, res, next) => {
 	const chatId = req.params.chatId;
 	Chat.findOne({ _id: chatId })
@@ -103,9 +107,9 @@ export const getChatMembers: RequestHandler = (req, res, next) => {
 export const addChatMember: RequestHandler = (req, res, next) => {
 	const chatId = req.params.chatId;
 	const usernames = req.body.members;
-	User.find({ username: { $in: [...usernames] } })
-		.then((users) => {
-			Chat.findOne({ _id: chatId }).then((chat) => {
+	User.find({ username: { $in: [...usernames] } }).then((users) => {
+		Chat.findOne({ _id: chatId })
+			.then((chat) => {
 				if (!chat) throw new Error("chat id is not valid!");
 
 				users.forEach((user) => {
@@ -114,16 +118,17 @@ export const addChatMember: RequestHandler = (req, res, next) => {
 					chat.save();
 					user.save();
 				});
+			})
+			.then(() => {
+				res.status(200).json({
+					status: "success",
+					data: {},
+				});
+			})
+			.catch((err) => {
+				next(err);
 			});
-
-			res.status(200).json({
-				status: "success",
-				data: {},
-			});
-		})
-		.catch((err) => {
-			next(err);
-		});
+	});
 };
 
 export const sendMessage: RequestHandler = (req, res, next) => {
@@ -147,14 +152,16 @@ export const sendMessage: RequestHandler = (req, res, next) => {
 
 export const deleteMessage: RequestHandler = (req, res, next) => {
 	const messageId = req.params.messageId;
-	Message.deleteOne({ _id: messageId }).catch((err) => {
-		next(err);
-	});
-
-	res.status(200).json({
-		status: "success",
-		data: {},
-	});
+	Message.deleteOne({ _id: messageId })
+		.then(() => {
+			res.status(200).json({
+				status: "success",
+				data: {},
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
 };
 export const getMessage: RequestHandler = (req, res, next) => {
 	const messageId = req.params.messageId;

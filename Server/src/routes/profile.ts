@@ -1,5 +1,5 @@
-import { isAuth, login, signup } from "../controllers/auth";
 import { getProfile, updateProfile } from "../controllers/profile";
+import isAuth from "../middlewares/isAuth";
 
 const express = require("express");
 

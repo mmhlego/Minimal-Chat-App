@@ -1,4 +1,3 @@
-import { isAuth, login, signup } from "../controllers/auth";
 import {
 	addChatMember,
 	createChat,
@@ -10,6 +9,11 @@ import {
 	getMessage,
 	sendMessage,
 } from "../controllers/chat";
+import {
+	haveAccessToAddMember,
+	haveAccessToChatList,
+} from "../middlewares/haveAccess";
+import isAuth from "../middlewares/isAuth";
 
 const express = require("express");
 
@@ -19,18 +23,48 @@ router.post("/chats", isAuth, createChat);
 
 router.get("/chats", isAuth, getChatList);
 
-router.get("/chats/:chatId", isAuth, getChat);
+router.get("/chats/:chatId", isAuth, haveAccessToChatList, getChat);
 
-router.get("/chats/:chatId/members", isAuth, getChatMembers);
+router.get(
+	"/chats/:chatId/members",
+	isAuth,
+	haveAccessToChatList,
+	getChatMembers
+);
 
-router.post("/chats/:chatId/members", isAuth, addChatMember);
+router.post(
+	"/chats/:chatId/members",
+	isAuth,
+	haveAccessToAddMember,
+	addChatMember
+);
 
-router.post("/chats/:chatId/messages", isAuth, sendMessage);
+router.post(
+	"/chats/:chatId/messages",
+	isAuth,
+	haveAccessToChatList,
+	sendMessage
+);
 
-router.delete("/chats/:chatId/messages/:messageId", isAuth, deleteMessage);
+router.delete(
+	"/chats/:chatId/messages/:messageId",
+	isAuth,
+	haveAccessToChatList,
+	deleteMessage
+);
 
-router.get("/chats/:chatId/messages/:messageId", isAuth, getMessage);
+router.get(
+	"/chats/:chatId/messages/:messageId",
+	isAuth,
+	haveAccessToChatList,
+	getMessage
+);
 
-router.post("/chats/:chatId/history", isAuth, getChatHistory);
+router.post(
+	"/chats/:chatId/history",
+	isAuth,
+	haveAccessToChatList,
+	getChatHistory
+);
 
 export default router;
