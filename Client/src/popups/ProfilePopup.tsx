@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge";
 import Button from "../components/Button";
 import ChatIcon from "../components/ChatIcon";
@@ -13,6 +12,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { GetProfile, UpdateProfile } from "../api/AuthApis";
 import { AxiosError } from "axios";
 import { ErrorWrapper } from "../models/ResponseWrapper";
+import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 
 type Props = {
 	visible: boolean;
@@ -30,12 +30,8 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 	const handleError = () => {
 		closePopup();
-		toast.error("An error occurred while loading your profile info", {
-			position: "bottom-right",
-			autoClose: 3000,
-			closeOnClick: false,
-			pauseOnHover: false
-		});
+
+		ShowErrorToast("An error occurred while loading your profile info");
 	};
 
 	const { error, isLoading, refetch } = useQuery(["userProfile"], () => GetProfile(), {
@@ -62,28 +58,13 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 		{
 			onSuccess(res) {
 				if (res.status === "success") {
-					toast.success("Profile Updated Successfully", {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowSuccessToast("Profile Updated Successfully");
 				} else {
-					toast.error(res.data, {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowErrorToast(res.data);
 				}
 			},
 			onError(err: AxiosError<ErrorWrapper>) {
-				toast.error(err.response ? err.response.data.data : "An Error Occurred", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast(err.response?.data.data);
 			}
 		}
 	);
@@ -199,12 +180,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 						} else {
 							console.log(res.error);
 
-							toast.error(res.error.errors[0].message, {
-								position: "bottom-right",
-								autoClose: 3000,
-								closeOnClick: false,
-								pauseOnHover: false
-							});
+							ShowErrorToast(res.error.errors[0].message);
 						}
 					}}
 					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-blue/10 hover:text-blue">

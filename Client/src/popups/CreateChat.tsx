@@ -2,7 +2,6 @@ import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { AddSquare, Back, CloseCircle } from "iconsax-react";
 import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
 import { CreateNewChat } from "../api/ChatApis";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
@@ -11,6 +10,7 @@ import { ChatTypes } from "../models/ChatInfo";
 import { ErrorWrapper } from "../models/ResponseWrapper";
 import { ProfileFormSchema } from "../utils/Schemas";
 import PopupContainer from "./PopupContainer";
+import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 
 type Props = {
 	visible: boolean;
@@ -30,28 +30,13 @@ export default function CreateChat({ visible, closePopup }: Props) {
 		{
 			onSuccess(res) {
 				if (res.status === "success") {
-					toast.success("Chat Created Successfully", {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowSuccessToast("Chat Created Successfully");
 				} else {
-					toast.error(res.data, {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowErrorToast(res.data);
 				}
 			},
 			onError(err: AxiosError<ErrorWrapper>) {
-				toast.error(err.response ? err.response.data.data : "An Error Occurred", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast(err.response?.data.data);
 			}
 		}
 	);

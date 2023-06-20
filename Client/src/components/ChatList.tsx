@@ -6,7 +6,7 @@ import ChatInfo from "../models/ChatInfo";
 import Button from "./Button";
 import ChatItem from "./ChatItem";
 import Header from "./Header";
-import { toast } from "react-toastify";
+import { ShowErrorToast } from "../utils/Toasts";
 
 type Props = {
 	selectedChatId?: string;
@@ -28,17 +28,12 @@ export default function ChatList({
 
 	const { data: _ } = useQuery(["chats"], () => GetChatsList(), {
 		cacheTime: 0,
-		// refetchInterval: 1000, //TODO
+		refetchInterval: 1000,
 		onSuccess(res) {
 			if (res.status === "success") {
 				setChatList(res.data);
 			} else {
-				toast.error("An error occurred while loading chat list", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast("An error occurred while loading chat list");
 			}
 		}
 	});

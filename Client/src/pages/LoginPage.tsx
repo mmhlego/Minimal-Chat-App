@@ -3,13 +3,13 @@ import { AxiosError } from "axios";
 import { ArrowRight } from "iconsax-react";
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Login } from "../api/AuthApis";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
 import Loading from "../components/Loading";
 import { ErrorWrapper } from "../models/ResponseWrapper";
+import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 
 type Props = {};
 
@@ -22,30 +22,14 @@ export default function LoginPage({}: Props) {
 	const { mutate: login, isLoading } = useMutation(() => Login(username, password), {
 		onSuccess(res) {
 			if (res.status === "success") {
-				toast.success("Success. Redirecting...", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
-
+				ShowSuccessToast("Success. Redirecting...");
 				setTimeout(() => navigate("/home"), 3000);
 			} else {
-				toast.error(res.data, {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast(res.data);
 			}
 		},
 		onError(err: AxiosError<ErrorWrapper>) {
-			toast.error(err.response ? err.response.data.data : "An Error Occurred", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
+			ShowErrorToast(err.response?.data.data);
 		}
 	});
 

@@ -11,13 +11,13 @@ import {
 } from "iconsax-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
-import { toast } from "react-toastify";
 import { Socket } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
 import { DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
 import { scrollToEnd } from "../utils/ScrollUtils";
+import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 import Button from "./Button";
 import ChatIcon from "./ChatIcon";
 import Loading from "./Loading";
@@ -71,12 +71,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 		{
 			onSuccess(res) {
 				if (res.status === "error") {
-					toast.error("An error occurred while loading your profile info", {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowErrorToast("An error occurred while loading your profile info");
 				} else {
 					loadHistory().then(() => {
 						setTimeout(() => scrollToEnd(containerRef), 150);
@@ -84,12 +79,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 				}
 			},
 			onError() {
-				toast.error("An error occurred while loading your profile info", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast("An error occurred while loading your profile info");
 			},
 			enabled: false
 		}
@@ -102,12 +92,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 		{
 			onSuccess(res) {
 				if (res.status === "error") {
-					toast.error("An error occurred while loading chat history", {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowErrorToast("An error occurred while loading chat history");
 					return;
 				}
 
@@ -120,12 +105,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 				}
 			},
 			onError() {
-				toast.error("An error occurred while loading chat history", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast("An error occurred while loading chat history");
 			},
 			enabled: false
 		}
@@ -154,16 +134,10 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 						});
 				}
 
-				toast.success("Message deleted successfully", {
-					position: "bottom-right",
-					autoClose: 1000
-				});
+				ShowSuccessToast("Message deleted successfully", 1000);
 			},
 			onError() {
-				toast.error("An error ocurred", {
-					position: "bottom-right",
-					autoClose: 1000
-				});
+				ShowErrorToast("An error ocurred", 1000);
 			}
 		}
 	);
@@ -405,12 +379,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 							const message = messages.find((v) => v.id == selectedMessage);
 							if (message) {
 								navigator.clipboard.writeText(message.body);
-								toast.success("Coppied to clipboard", {
-									position: "bottom-right",
-									pauseOnHover: false,
-									autoClose: 1000,
-									theme: "colored"
-								});
+								ShowSuccessToast("Coppied to clipboard", 1000, "colored");
 							}
 						}}>
 						<Copy />
