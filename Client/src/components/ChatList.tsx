@@ -22,6 +22,7 @@ export default function ChatList({ selectedChatId, openProfile, setChatId }: Pro
 
 	const { data: _ } = useQuery(["chats"], () => GetChatsList(), {
 		cacheTime: 0,
+		refetchInterval: 1000,
 		onSuccess(res) {
 			if (res.status === "success") {
 				setChatList(res.data);
