@@ -76,7 +76,8 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 			},
 		}).count();
 
-		accumulator.push({
+		const asyncAcc = await accumulator;
+		asyncAcc.push({
 			chatId: chat._id,
 			name: chat.name,
 			type: chat.type,
@@ -86,7 +87,7 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 		});
 		// console.log(accumulator);
 
-		return accumulator;
+		return asyncAcc;
 	}, []);
 
 	res.status(200).json({
