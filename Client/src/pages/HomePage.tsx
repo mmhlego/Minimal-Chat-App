@@ -1,15 +1,30 @@
-import { useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { io } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
 import ChatList from "../components/ChatList";
 import ChatSection from "../components/ChatSection";
 import CreateChatPopup from "../popups/CreateChatPopup";
 import ProfilePopup from "../popups/ProfilePopup";
+import { useNavigate } from "react-router";
+import { MainContext } from "../context/MainContext";
+import axios from "axios";
 
 export default function HomePage() {
 	const [selectedChat, setSelectedChat] = useState<string | undefined>(undefined);
 	const [profileVisible, setProfileVisible] = useState(false);
 	const [createVisible, setCreateVisible] = useState(false);
+
+	const navigate = useNavigate();
+
+	useLayoutEffect(() => {
+		const token = localStorage.getItem("jwt");
+
+		if (token) {
+			axios.defaults.headers.common.Authorization = `Bearer ${token}`;
+		} else {
+			navigate("/login");
+		}
+	}, []);
 
 	const socketIo = io("http://localhost:3000", {
 		// auth: { //TODO
@@ -56,9 +71,9 @@ export default function HomePage() {
 				)}
 			/>
 
-			<ProfilePopup visible={profileVisible} closePopup={() => setProfileVisible(false)} />
+			{/* <ProfilePopup visible={profileVisible} closePopup={() => setProfileVisible(false)} /> */}
 
-			<CreateChatPopup visible={createVisible} closePopup={() => setCreateVisible(false)} />
+			{/* <CreateChatPopup visible={createVisible} closePopup={() => setCreateVisible(false)} /> */}
 		</div>
 	);
 }

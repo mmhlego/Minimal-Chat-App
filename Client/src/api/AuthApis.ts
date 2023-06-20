@@ -21,13 +21,7 @@ export async function Register(
 	return response.data;
 }
 
-interface IJwtResponse {
-	jwt: string;
-}
-export async function Login(
-	username: string,
-	password: string
-): Promise<ResponseWrapper<IJwtResponse>> {
+export async function Login(username: string, password: string): Promise<ResponseWrapper<string>> {
 	const response = await axios.post("/login", {
 		username,
 		password

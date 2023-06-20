@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
+import { Back, RefreshSquare } from "iconsax-react";
+import { useEffect, useContext, useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { GetProfile, UpdateProfile } from "../api/AuthApis";
 import Button from "../components/Button";
 import ChatIcon from "../components/ChatIcon";
 import InputField from "../components/InputField";
-import User from "../models/User";
-import { ProfileFormSchema } from "../utils/Schemas";
-import PopupContainer from "./PopupContainer";
-import { Back, RefreshSquare } from "iconsax-react";
 import Loading from "../components/Loading";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { GetProfile, UpdateProfile } from "../api/AuthApis";
-import { AxiosError } from "axios";
+import { MainContext } from "../context/MainContext";
 import { ErrorWrapper } from "../models/ResponseWrapper";
+import { ProfileFormSchema } from "../utils/Schemas";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
+import PopupContainer from "./PopupContainer";
+import User from "../models/User";
+import { useNavigate } from "react-router";
 
 type Props = {
 	visible: boolean;
@@ -20,13 +22,12 @@ type Props = {
 };
 
 export default function ProfilePopup({ visible, closePopup }: Props) {
-	const [profile, setProfile] = useState<User>({
-		username: "",
-		firstName: "",
-		lastName: "",
-		email: "",
-		avatarUrl: undefined
-	});
+	const ctx = useContext(MainContext);
+	ctx.fetchProfile();
+
+	const navigate = useNavigate();
+
+	const [profile, setProfile] = useState<User>(ctx.profile!);
 
 	const handleError = () => {
 		closePopup();
@@ -37,9 +38,12 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 	const { error, isLoading, refetch } = useQuery(["userProfile"], () => GetProfile(), {
 		cacheTime: 0,
 		enabled: visible,
-		onSuccess(data) {
-			if (data.status === "error") handleError();
-			else setProfile(data.data);
+		onSuccess(res) {
+			if (res.status === "error") handleError();
+			else {
+				setProfile(res.data);
+				ctx.setProfile(res.data);
+			}
 		},
 		onError() {
 			handleError();
