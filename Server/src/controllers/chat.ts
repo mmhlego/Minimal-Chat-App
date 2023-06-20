@@ -53,10 +53,9 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 			},
 		},
 	});
-	console.log(user);
+	// console.log(user);
 
 	if (!user) throw new Error("chat id is not valid!");
-	console.log(user.chatIds);
 	const data = await user.chatIds.reduce(async (accumulator, chat) => {
 		let lastSeenDate;
 		chat.unreadMessageCount.forEach((e: any) => {
@@ -64,11 +63,13 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 				if (e.lastSeenMessage) {
 					lastSeenDate = e.lastSeenMessage.sendDate;
 				} else {
-					lastSeenDate = new Date();
+					lastSeenDate = new Date(2020);
 				}
 			}
 		});
+		// console.log(chat);
 
+		// if(chat.)
 		const count = await Message.find({
 			chatId: chat._id,
 			senderId: { $ne: userId },
