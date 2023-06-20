@@ -45,7 +45,6 @@ export const createChat: RequestHandler = (req, res, next) => {
 export const getChatList: RequestHandler = (req, res, next) => {
 	const userId = (req as CustomReq).userId;
 	User.findOne({ _id: userId })
-		// .populate("chatIds")
 		.populate({
 			path: "chatIds",
 			populate: {
@@ -57,7 +56,6 @@ export const getChatList: RequestHandler = (req, res, next) => {
 		})
 		.then(async (user) => {
 			if (!user) throw new Error("chat id is not valid!");
-			console.log(user);
 			const data = await user.chatIds.reduce(
 				async (accumulator, chat) => {
 					let lastSeenDate;
@@ -65,8 +63,6 @@ export const getChatList: RequestHandler = (req, res, next) => {
 						if (e.userId.equals(new Types.ObjectId(userId)))
 							lastSeenDate = e.lastSeenMessage.sendDate;
 					});
-
-					console.log("============");
 
 					const count = await Message.find({
 						chatId: chat._id,
@@ -76,10 +72,6 @@ export const getChatList: RequestHandler = (req, res, next) => {
 						},
 					}).count();
 
-					console.log(count);
-					console.log("============");
-
-					// .then((count) => {
 					accumulator.push({
 						chatId: chat._id,
 						name: chat.name,
@@ -91,11 +83,6 @@ export const getChatList: RequestHandler = (req, res, next) => {
 					console.log(accumulator);
 
 					return accumulator;
-					// })
-					// .catch((err) => {
-					// 	next(err);
-					// });
-					// console.log(temp);
 				},
 				[]
 			);
