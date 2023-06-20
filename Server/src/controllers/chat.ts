@@ -28,7 +28,7 @@ export const createChat: RequestHandler = (req, res, next) => {
 			});
 			chat.save();
 			users.forEach((user) => {
-				user.chatIds = chat._id;
+				user.chatIds = [...user.chatIds, chat._id];
 				user.save();
 			});
 
@@ -42,64 +42,60 @@ export const createChat: RequestHandler = (req, res, next) => {
 		});
 };
 
-export const getChatList: RequestHandler = (req, res, next) => {
+export const getChatList: RequestHandler = async (req, res, next) => {
 	const userId = (req as CustomReq).userId;
-	User.findOne({ _id: userId })
-		.populate({
-			path: "chatIds",
+	const user = await User.findOne({ _id: userId }).populate({
+		path: "chatIds",
+		populate: {
+			path: "unreadMessageCount",
 			populate: {
-				path: "unreadMessageCount",
-				populate: {
-					path: "lastSeenMessage",
-				},
+				path: "lastSeenMessage",
 			},
-		})
-		.then(async (user) => {
-			if (!user) throw new Error("chat id is not valid!");
+		},
+	});
 
-			const data = await user.chatIds.reduce(
-				async (accumulator, chat) => {
-					let lastSeenDate;
-					chat.unreadMessageCount.forEach((e: any) => {
-						if (e.userId.equals(new Types.ObjectId(userId))) {
-							if (e.lastSeenMessage) {
-								lastSeenDate = e.lastSeenMessage.sendDate;
-							} else {
-								lastSeenDate = new Date();
-							}
-						}
-					});
+	if (!user) throw new Error("chat id is not valid!");
 
-					const count = await Message.find({
-						chatId: chat._id,
-						senderId: { $ne: userId },
-						sendDate: {
-							$gt: lastSeenDate,
-						},
-					}).count();
-
-					accumulator.push({
-						chatId: chat._id,
-						name: chat.name,
-						type: chat.type,
-						unreadMessageCount: count,
-						lastMessage: chat.lastMessage,
-						lastSendDate: chat.lastSendDate,
-					});
-					console.log(accumulator);
-
-					return accumulator;
-				},
-				[]
-			);
-			res.status(200).json({
-				status: "success",
-				data,
-			});
-		})
-		.catch((err) => {
-			next(err);
+	const data = await user.chatIds.reduce(async (accumulator, chat) => {
+		let lastSeenDate;
+		chat.unreadMessageCount.forEach((e: any) => {
+			if (e.userId.equals(new Types.ObjectId(userId))) {
+				if (e.lastSeenMessage) {
+					lastSeenDate = e.lastSeenMessage.sendDate;
+				} else {
+					lastSeenDate = new Date();
+				}
+			}
 		});
+
+		const count = await Message.find({
+			chatId: chat._id,
+			senderId: { $ne: userId },
+			sendDate: {
+				$gt: lastSeenDate,
+			},
+		}).count();
+
+		accumulator.push({
+			chatId: chat._id,
+			name: chat.name,
+			type: chat.type,
+			unreadMessageCount: count,
+			lastMessage: chat.lastMessage,
+			lastSendDate: chat.lastSendDate,
+		});
+		// console.log(accumulator);
+
+		return accumulator;
+	}, []);
+
+	res.status(200).json({
+		status: "success",
+		data,
+	});
+	// .catch((err) => {
+	// 	next(err);
+	// });
 };
 
 export const getChat: RequestHandler = (req, res, next) => {
