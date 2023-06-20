@@ -2,7 +2,7 @@ import { Schema, model, Document, Types } from "mongoose";
 import { IChat } from "./chat";
 import { IUser } from "./user";
 
-interface IMessage extends Document {
+export interface IMessage extends Document {
 	chatId: IChat["_id"];
 	senderId: IUser["_id"];
 	replyTo?: IMessage["_id"];

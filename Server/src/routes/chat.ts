@@ -7,6 +7,7 @@ import {
 	getChatList,
 	getChatMembers,
 	getMessage,
+	seenMessage,
 	sendMessage,
 } from "../controllers/chat";
 import {
@@ -14,6 +15,7 @@ import {
 	haveAccessToChatList,
 } from "../middlewares/haveAccess";
 import isAuth from "../middlewares/isAuth";
+import { isRelatedToChat } from "../middlewares/isRelatedToChat";
 
 const express = require("express");
 
@@ -65,6 +67,14 @@ router.post(
 	isAuth,
 	haveAccessToChatList,
 	getChatHistory
+);
+
+router.put(
+	"/chats/:chatId/seen/:messageId",
+	isAuth,
+	haveAccessToChatList,
+	isRelatedToChat,
+	seenMessage
 );
 
 export default router;

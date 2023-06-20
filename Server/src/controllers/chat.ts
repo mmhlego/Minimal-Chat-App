@@ -1,8 +1,9 @@
 import { RequestHandler } from "express";
 import { CustomReq, ResError } from "../app";
-import Chat, { IChat } from "../models/chat";
+import Chat, { IChat, IUnreadMessage } from "../models/chat";
 import User from "../models/user";
 import Message from "../models/message";
+import { Types } from "mongoose";
 
 export const createChat: RequestHandler = (req, res, next) => {
 	const userId = (req as CustomReq).userId;
@@ -11,11 +12,19 @@ export const createChat: RequestHandler = (req, res, next) => {
 	const chatMembers = req.body.members;
 	User.find({ username: { $in: [...chatMembers] } })
 		.then((users) => {
+			const unreadMessageCount: any[] = [];
+			users.forEach((e) => {
+				unreadMessageCount.push({
+					userId: e._id,
+				});
+			});
 			const chat = new Chat({
 				name: chatName,
 				type: chatType,
 				memberIds: users,
 				creatorId: userId,
+				unreadMessageCount:
+					unreadMessageCount as unknown as IUnreadMessage,
 			});
 			chat.save();
 			users.forEach((user) => {
@@ -36,22 +45,63 @@ export const createChat: RequestHandler = (req, res, next) => {
 export const getChatList: RequestHandler = (req, res, next) => {
 	const userId = (req as CustomReq).userId;
 	User.findOne({ _id: userId })
-		.populate("chatIds")
-		.then((user) => {
+		// .populate("chatIds")
+		.populate({
+			path: "chatIds",
+			populate: {
+				path: "unreadMessageCount",
+				populate: {
+					path: "lastSeenMessage",
+				},
+			},
+		})
+		.then(async (user) => {
 			if (!user) throw new Error("chat id is not valid!");
-			res.status(200).json({
-				status: "success",
-				data: user.chatIds.reduce((accumulator, chat) => {
+			console.log(user);
+			const data = await user.chatIds.reduce(
+				async (accumulator, chat) => {
+					let lastSeenDate;
+					chat.unreadMessageCount.forEach((e: any) => {
+						if (e.userId.equals(new Types.ObjectId(userId)))
+							lastSeenDate = e.lastSeenMessage.sendDate;
+					});
+
+					console.log("============");
+
+					const count = await Message.find({
+						chatId: chat._id,
+						senderId: { $ne: userId },
+						sendDate: {
+							$gt: lastSeenDate,
+						},
+					}).count();
+
+					console.log(count);
+					console.log("============");
+
+					// .then((count) => {
 					accumulator.push({
 						chatId: chat._id,
 						name: chat.name,
 						type: chat.type,
-						// unreadMessageCount: ,
+						unreadMessageCount: count,
 						lastMessage: chat.lastMessage,
 						lastSendDate: chat.lastSendDate,
 					});
+					console.log(accumulator);
+
 					return accumulator;
-				}, []),
+					// })
+					// .catch((err) => {
+					// 	next(err);
+					// });
+					// console.log(temp);
+				},
+				[]
+			);
+			res.status(200).json({
+				status: "success",
+				data,
 			});
 		})
 		.catch((err) => {
@@ -143,11 +193,21 @@ export const sendMessage: RequestHandler = (req, res, next) => {
 		sendDate: new Date(),
 	});
 	message.save();
+	Chat.findOne({ _id: chatId })
+		.then((chat) => {
+			if (!chat) throw new Error("chatId is invalid!");
+			chat.lastMessage = body;
+			chat.lastSendDate = new Date();
+			chat.save();
 
-	res.status(200).json({
-		status: "success",
-		data: {},
-	});
+			res.status(200).json({
+				status: "success",
+				data: {},
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
 };
 
 export const deleteMessage: RequestHandler = (req, res, next) => {
@@ -192,6 +252,31 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 			res.status(200).json({
 				status: "success",
 				data: messages,
+			});
+		})
+		.catch((err) => {
+			next(err);
+		});
+};
+
+export const seenMessage: RequestHandler = (req, res, next) => {
+	const messageId = req.params.messageId;
+	const chatId = req.params.chatId;
+	const userId = (req as CustomReq).userId;
+	console.log(userId);
+
+	Chat.updateOne(
+		{ _id: chatId, "unreadMessageCount.userId": userId },
+		{
+			"unreadMessageCount.$.lastSeenMessage": messageId,
+		}
+	)
+		.then((message) => {
+			if (!message.matchedCount)
+				throw new Error("chatId or userId is invalid!");
+			res.status(200).json({
+				status: "success",
+				data: {},
 			});
 		})
 		.catch((err) => {
