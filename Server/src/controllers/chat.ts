@@ -237,7 +237,7 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 	const count = req.body.count;
 	Message.find(
 		{ $and: [{ chatId }, { sendDate: { $lt: date } }] },
-		{ _id: 0, __v: 0 },
+		{ __v: 0 },
 		{ sort: { sendDate: 0 }, limit: count }
 	)
 		.populate("senderId")
@@ -247,12 +247,13 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 				status: "success",
 				data: messages.reduce((acc: any[], message) => {
 					acc.push({
+						id: message._id,
 						chatId: message.chatId,
 						sender: {
 							username: message.senderId.username,
-							email: message.senderId.email,
-							firstName: message.senderId.firstName,
-							lastName: message.senderId.lastName,
+							// email: message.senderId.email,
+							// firstName: message.senderId.firstName,
+							// lastName: message.senderId.lastName,
 							avatarUrl: message.senderId.avatarUrl,
 						},
 						body: message.body,
