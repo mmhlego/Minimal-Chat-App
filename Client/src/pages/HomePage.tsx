@@ -3,7 +3,7 @@ import { io } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
 import ChatList from "../components/ChatList";
 import ChatSection from "../components/ChatSection";
-import CreateChat from "../popups/CreateChat";
+import CreateChatPopup from "../popups/CreateChatPopup";
 import ProfilePopup from "../popups/ProfilePopup";
 
 export default function HomePage() {
@@ -58,7 +58,7 @@ export default function HomePage() {
 
 			<ProfilePopup visible={profileVisible} closePopup={() => setProfileVisible(false)} />
 
-			<CreateChat visible={createVisible} closePopup={() => setCreateVisible(false)} />
+			<CreateChatPopup visible={createVisible} closePopup={() => setCreateVisible(false)} />
 		</div>
 	);
 }
