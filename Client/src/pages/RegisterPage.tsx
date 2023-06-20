@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
-import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Button from "../components/Button";
 import InputField from "../components/InputField";
@@ -11,6 +10,7 @@ import Loading from "../components/Loading";
 import { ArrowRight } from "iconsax-react";
 import { AxiosError } from "axios";
 import { ErrorWrapper } from "../models/ResponseWrapper";
+import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 
 type Props = {};
 
@@ -32,30 +32,15 @@ export default function RegisterPage({}: Props) {
 				if (res.status === "success") {
 					localStorage.setItem("jwt", res.data);
 
-					toast.success("Success. Redirecting...", {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowSuccessToast("Success. Redirecting...");
 
 					setTimeout(() => navigate("/home"), 4000);
 				} else {
-					toast.error(res.data, {
-						position: "bottom-right",
-						autoClose: 3000,
-						closeOnClick: false,
-						pauseOnHover: false
-					});
+					ShowErrorToast(res.data);
 				}
 			},
 			onError(err: AxiosError<ErrorWrapper>) {
-				toast.error(err.response ? err.response.data.data : "An Error Occurred", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast(err.response?.data.data);
 			}
 		}
 	);
@@ -116,7 +101,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Avatar Url"
-					initialValue={avatar}
+					value={avatar}
 					onChange={setAvatar}
 					hint="At least 8 characters long"
 					className="w-full"
@@ -134,21 +119,11 @@ export default function RegisterPage({}: Props) {
 						if (res.success && password === passwordR) {
 							register();
 						} else if (password !== passwordR) {
-							toast.error("Repeat password is incorrect", {
-								position: "bottom-right",
-								autoClose: 3000,
-								closeOnClick: false,
-								pauseOnHover: false
-							});
+							ShowErrorToast("Repeat password is incorrect");
 						} else if (!res.success) {
 							console.log(res.error.errors[0].message);
 
-							toast.error(res.error.errors[0].message, {
-								position: "bottom-right",
-								autoClose: 3000,
-								closeOnClick: false,
-								pauseOnHover: false
-							});
+							ShowErrorToast(res.error.errors[0].message);
 						}
 					}}
 					className="w-full py-1.5 gap-1 hover:gap-2.5">

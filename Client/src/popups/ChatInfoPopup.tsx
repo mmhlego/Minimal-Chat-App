@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { toast } from "react-toastify";
 import { GetChatMembers } from "../api/ChatApis";
 import ChatIcon from "../components/ChatIcon";
 import UserItem from "../components/Usertem";
 import ChatInfo from "../models/ChatInfo";
 import PopupContainer from "./PopupContainer";
 import Loading from "../components/Loading";
+import { ShowErrorToast } from "../utils/Toasts";
 
 type Props = {
 	visible: boolean;
@@ -21,12 +21,7 @@ export default function ChatInfoPopup({ visible, chatInfo, closePopup }: Props) 
 			cacheTime: 0,
 			onError() {
 				closePopup();
-				toast.error("An error occurred while loading chat info", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+				ShowErrorToast("An error occurred while loading chat info");
 			}
 		}
 	);
@@ -45,10 +40,10 @@ export default function ChatInfoPopup({ visible, chatInfo, closePopup }: Props) 
 				<div className="flex flex-col">
 					{members?.status === "success" &&
 						members?.data
-							.sort(
-								(a, b) =>
-									new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
-							)
+							// .sort(
+							// 	(a, b) =>
+							// 		new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
+							// )
 							.map((member) => <UserItem key={member.username} info={member} />)}
 				</div>
 			</div>
