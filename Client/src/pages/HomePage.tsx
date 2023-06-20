@@ -33,7 +33,7 @@ export default function HomePage() {
 
 	const socketIo = io("http://localhost:3000", {
 		auth: {
-			token: axios.defaults.headers.common.Authorization
+			token: localStorage.getItem("jwt")
 		},
 		query: {
 			roomNumber: selectedChat

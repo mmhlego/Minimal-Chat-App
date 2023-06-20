@@ -66,6 +66,11 @@ mongoose
 
 			const token = socket.handshake.auth.token;
 
+			if (token === null) {
+				socket.disconnect();
+				return;
+			}
+
 			const tok = token.split(" ")[1];
 			let decodedToken: any;
 			try {
