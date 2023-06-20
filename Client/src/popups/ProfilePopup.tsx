@@ -27,7 +27,8 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 		username: "",
 		email: "",
 		firstName: "",
-		lastName: ""
+		lastName: "",
+		avatarUrl: ""
 	});
 
 	const handleError = () => {

@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import Chat from "./models/chat";
 import Message from "./models/message";
 import jwt from "jsonwebtoken";
+import User from "./models/user";
 
 export interface ResError extends Error {
 	status?: number;
@@ -71,6 +72,8 @@ mongoose
 				return;
 			}
 
+			console.log(token);
+
 			const tok = token.split(" ")[1];
 			let decodedToken: any;
 			try {
@@ -109,7 +112,8 @@ mongoose
 
 			socket.on("leave-conversation", (roomId: string | null) => {
 				console.log("leave-conversation", roomId);
-				if (roomId) socket.leave(`room-userId-${roomId}`);
+				// if (roomId) socket.leave(`room-userId-${roomId}`);
+				if (roomId) socket.disconnect();
 			});
 
 			/**
@@ -118,7 +122,11 @@ mongoose
 
 			socket.on(
 				"send-message",
-				(body: string, chatId: string, replyId?: string) => {
+				async (body: string, chatId: string, replyId?: string) => {
+					const user = await User.findOne({
+						_id: (decodedToken as { userId: string }).userId,
+					});
+
 					const message = new Message({
 						chatId: chatId,
 						senderId: (decodedToken as { userId: string }).userId,
@@ -133,7 +141,18 @@ mongoose
 							chat.lastMessage = body;
 							chat.lastSendDate = new Date();
 							chat.save();
-							socketIo.to(room).emit("receive-message", message);
+
+							socketIo.to(room).emit("receive-message", {
+								id: message._id,
+								body: message.body,
+								replyTo: message.replyTo,
+								senDate: message.sendDate,
+								chatId: message.chatId,
+								sender: {
+									username: user?.username,
+									avatarUrl: user?.avatarUrl,
+								},
+							});
 						})
 						.catch((err) => {});
 					console.log("new message", { body, replyId });

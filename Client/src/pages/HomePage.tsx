@@ -33,7 +33,7 @@ export default function HomePage() {
 
 	const socketIo = io("http://localhost:3000", {
 		auth: {
-			token: localStorage.getItem("jwt")
+			token: `Bearer ${localStorage.getItem("jwt")}`
 		},
 		query: {
 			roomNumber: selectedChat
@@ -50,7 +50,8 @@ export default function HomePage() {
 	};
 
 	const sendMessage = (body: string, replyId?: string) => {
-		socketIo.emit("send-message", selectedChat, body, replyId);
+		const chatId = selectedChat;
+		socketIo.emit("send-message", body, chatId, replyId);
 	};
 
 	return (

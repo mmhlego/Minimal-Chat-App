@@ -13,7 +13,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Socket } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
-import { DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
+import { ChatSeen, DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
 import { scrollToEnd } from "../utils/ScrollUtils";
@@ -22,6 +22,7 @@ import Button from "./Button";
 import ChatIcon from "./ChatIcon";
 import Loading from "./Loading";
 import Message from "./Message";
+import { GetProfile } from "../api/AuthApis";
 
 type Props = {
 	chatId: string | undefined;
@@ -64,6 +65,15 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 	// Popups
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
+	const [username, setUsername] = useState("");
+
+	const {} = useQuery(["userProfile"], () => GetProfile(), {
+		cacheTime: 0,
+		onSuccess(res) {
+			if (res.status === "success") setUsername(res.data.username);
+		}
+	});
+
 	// Apis
 	const { data: chatInfo, refetch: getChatInfo } = useQuery(
 		[chatId],
@@ -97,6 +107,9 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 				}
 
 				setMessages((m) => [...res.data, ...m]);
+
+				if (res.data.length > 0)
+					seenMessage({ cId: chatId!, mId: res.data.at(-1)?.id as string });
 
 				if (loadCount !== res.data.length) {
 					setHistoryAvailable(false);
@@ -142,6 +155,10 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 		}
 	);
 
+	const { mutate: seenMessage } = useMutation(({ cId, mId }: { cId: string; mId: string }) =>
+		ChatSeen(cId, mId)
+	);
+
 	const sendNewMessage = () => {
 		if (newMessage.trim().length === 0) return;
 
@@ -185,12 +202,13 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 
 	useLayoutEffect(() => {
 		socketIo.on("receive-message", (newMessage: ChatMessage) => {
-			console.log(newMessage);
 			setMessages((m) => [...m, newMessage]);
 
-			if (endIsVisible) {
-				setTimeout(() => scrollToEnd(containerRef), 150);
-			}
+			console.log(newMessage);
+
+			seenMessage({ cId: newMessage.chatId!, mId: newMessage.id });
+
+			setTimeout(() => scrollToEnd(containerRef), 150);
 		});
 	}, []);
 
@@ -283,7 +301,7 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 							chatId={chatInfo.data.chatId}
 							chatType={chatInfo.data.type}
 							message={m}
-							fromUser={m.sender.username === "mmhejazi"}
+							fromUser={m.sender.username === username}
 							selectMessage={setSelectedMessage}
 						/>
 					</div>

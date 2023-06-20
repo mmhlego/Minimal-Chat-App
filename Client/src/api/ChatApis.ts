@@ -23,8 +23,11 @@ export async function GetChatInfo(chatId: string): Promise<ResponseWrapper<ChatI
 	return response.data;
 }
 
-export async function ChatSeen(chatId: string): Promise<ResponseWrapper<string>> {
-	const response = await axios.put(`/chats/${chatId}/seen`);
+export async function ChatSeen(
+	chatId: string,
+	messageId: string
+): Promise<ResponseWrapper<string>> {
+	const response = await axios.put(`/chats/${chatId}/seen/${messageId}`);
 	return response.data;
 }
 
