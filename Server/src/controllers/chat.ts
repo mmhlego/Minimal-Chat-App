@@ -28,7 +28,7 @@ export const createChat: RequestHandler = (req, res, next) => {
 			});
 			chat.save();
 			users.forEach((user) => {
-				user.chatIds = [...user.chatIds, chat._id];
+				user.chatIds.push(chat._id);
 				user.save();
 			});
 
@@ -53,9 +53,10 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 			},
 		},
 	});
+	console.log(user);
 
 	if (!user) throw new Error("chat id is not valid!");
-
+	console.log(user.chatIds);
 	const data = await user.chatIds.reduce(async (accumulator, chat) => {
 		let lastSeenDate;
 		chat.unreadMessageCount.forEach((e: any) => {
