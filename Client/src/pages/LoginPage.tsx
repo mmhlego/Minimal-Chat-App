@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { ArrowRight } from "iconsax-react";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router";
 import "react-toastify/dist/ReactToastify.css";
 import { Login } from "../api/AuthApis";
@@ -10,6 +10,7 @@ import InputField from "../components/InputField";
 import Loading from "../components/Loading";
 import { ErrorWrapper } from "../models/ResponseWrapper";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
+import { MainContext } from "../context/MainContext";
 
 type Props = {};
 
@@ -17,14 +18,21 @@ export default function LoginPage({}: Props) {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 
+	const ctx = useContext(MainContext);
+
 	const navigate = useNavigate();
 
 	const { mutate: login, isLoading } = useMutation(() => Login(username, password), {
 		onSuccess(res) {
 			if (res.status === "success") {
+				localStorage.setItem("jwt", res.data);
+				axios.defaults.headers.common.Authorization = `Bearer ${res.data}`;
+
 				ShowSuccessToast("Success. Redirecting...");
+
 				setTimeout(() => navigate("/home"), 3000);
 			} else {
+				localStorage.removeItem("jwt");
 				ShowErrorToast(res.data);
 			}
 		},
@@ -39,6 +47,7 @@ export default function LoginPage({}: Props) {
 				<h2 className="font-semibold text-3xl text-blue mb-2">Login</h2>
 				<InputField
 					accent="white"
+					value={username}
 					label="Username"
 					onChange={setUsername}
 					className="border-gray-300 w-full"
@@ -46,6 +55,7 @@ export default function LoginPage({}: Props) {
 
 				<InputField
 					accent="white"
+					value={password}
 					label="Password"
 					onChange={setPassword}
 					className="border-gray-300 w-full"

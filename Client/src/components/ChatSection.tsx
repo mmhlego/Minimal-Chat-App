@@ -165,6 +165,8 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 		setSelectedMessage(undefined);
 		setContextVisible(false);
 		setChatInfoVisible(false);
+		setHistoryDate(new Date().toISOString());
+		setHistoryAvailable(true);
 		setMessages([]);
 
 		if (chatId !== undefined) {
@@ -274,6 +276,10 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 					<div ref={historyRef} className="grid place-items-center">
 						<Loading />
 					</div>
+				)}
+
+				{messages.length === 0 && (
+					<p className="text-center text-lg italic pt-5">No Messages ...</p>
 				)}
 
 				{/* {messages.slice(0, -1).map((m) => ( */}

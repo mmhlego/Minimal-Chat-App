@@ -28,7 +28,7 @@ export default function ChatList({
 
 	const { data: _ } = useQuery(["chats"], () => GetChatsList(), {
 		cacheTime: 0,
-		// refetchInterval: 1000, //TODO
+		refetchInterval: 1000,
 		onSuccess(res) {
 			if (res.status === "success") {
 				setChatList(res.data);

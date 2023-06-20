@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { Register } from "../api/AuthApis";
 import Loading from "../components/Loading";
 import { ArrowRight } from "iconsax-react";
-import { AxiosError } from "axios";
+import axios, { AxiosError } from "axios";
 import { ErrorWrapper } from "../models/ResponseWrapper";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 
@@ -31,6 +31,7 @@ export default function RegisterPage({}: Props) {
 			onSuccess(res) {
 				if (res.status === "success") {
 					localStorage.setItem("jwt", res.data);
+					axios.defaults.headers.common.Authorization = `Bearer ${res.data}`;
 
 					ShowSuccessToast("Success. Redirecting...");
 
@@ -51,6 +52,7 @@ export default function RegisterPage({}: Props) {
 				<h2 className="font-semibold text-3xl text-blue mb-2">Register</h2>
 				<InputField
 					label="Username"
+					value={username}
 					onChange={setUsername}
 					hint="At least 8 characters long"
 					className="w-full"
@@ -59,6 +61,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Password"
+					value={password}
 					onChange={setPassword}
 					hint="At least 8 characters long"
 					className="w-full"
@@ -68,6 +71,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Repeat Password"
+					value={passwordR}
 					onChange={setPasswordR}
 					hint="Must be same as password"
 					className="w-full"
@@ -77,6 +81,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Email Address"
+					value={email}
 					onChange={setEmail}
 					hint="A valid email address"
 					className="w-full"
@@ -85,6 +90,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="First Name"
+					value={firstName}
 					onChange={setFirstName}
 					hint="At least 2 characters long"
 					className="w-full"
@@ -93,6 +99,7 @@ export default function RegisterPage({}: Props) {
 
 				<InputField
 					label="Last Name"
+					value={lastName}
 					onChange={setLastName}
 					hint="At least 2 characters long"
 					className="w-full"
