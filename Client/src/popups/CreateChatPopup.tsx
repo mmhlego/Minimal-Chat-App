@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { AddSquare, Back, CloseCircle } from "iconsax-react";
 import { useEffect, useState } from "react";
@@ -10,6 +10,7 @@ import { ChatTypes } from "../models/ChatInfo";
 import { ErrorWrapper } from "../models/ResponseWrapper";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 import PopupContainer from "./PopupContainer";
+import { GetProfile } from "../api/AuthApis";
 
 type Props = {
 	visible: boolean;
@@ -21,11 +22,23 @@ export default function CreateChatPopup({ visible, closePopup }: Props) {
 	const [type, setType] = useState<ChatTypes>("private");
 	const [members, setMembers] = useState<string[]>([]);
 	const [member, setMember] = useState<string>("");
+	const [username, setUsername] = useState("");
 
-	const currentUser = "mmhejazi"; //TODO
+	const {} = useQuery(["userProfile"], () => GetProfile(), {
+		cacheTime: 0,
+		enabled: visible,
+		onSuccess(res) {
+			if (res.status === "success") setUsername(res.data.username);
+		}
+	});
 
 	const { mutate: createChat, isLoading } = useMutation(
-		() => CreateNewChat(name, type, [...members, currentUser]),
+		() =>
+			CreateNewChat(
+				name,
+				type,
+				type === "group" ? [...members, username] : [member, username]
+			),
 		{
 			onSuccess(res) {
 				if (res.status === "success") {

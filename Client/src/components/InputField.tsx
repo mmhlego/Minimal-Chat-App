@@ -19,7 +19,7 @@ type Props = {
 
 export default function InputField({
 	label = "",
-	value: currentValue,
+	value: currentValue = "",
 	placeholder = "",
 	accent = "",
 	hint = "",

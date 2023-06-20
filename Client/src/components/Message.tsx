@@ -5,7 +5,6 @@ import { GetChatMessage } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import Loading from "./Loading";
 import { ChatTypes } from "../models/ChatInfo";
-import { scrollToMessage } from "../utils/ScrollUtils";
 
 type Props = {
 	chatId: string;
@@ -28,7 +27,7 @@ export default function Message({ chatId, chatType, message, fromUser, selectMes
 		[message.replyTo],
 		() => GetChatMessage(chatId, message.replyTo!),
 		{
-			enabled: message.replyTo !== undefined
+			enabled: message.replyTo !== null && message.replyTo !== undefined
 		}
 	);
 
