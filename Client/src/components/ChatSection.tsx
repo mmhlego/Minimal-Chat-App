@@ -184,20 +184,13 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 	}, [historyIsVisible]);
 
 	useLayoutEffect(() => {
-		socketIo.on("receive-message", (body: string, replyId?: string) => {
-			console.log(body, replyId);
-			setMessages((m) => [
-				...m,
-				{
-					body: body,
-					replyTo: replyId,
-					sendDate: new Date().toISOString(),
-					sender: {
-						username: "mmhejazi"
-					},
-					id: ""
-				}
-			]);
+		socketIo.on("receive-message", (newMessage: ChatMessage) => {
+			console.log(newMessage);
+			setMessages((m) => [...m, newMessage]);
+
+			if (endIsVisible) {
+				setTimeout(() => scrollToEnd(containerRef), 150);
+			}
 		});
 	}, []);
 
