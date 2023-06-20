@@ -8,16 +8,15 @@ import InputField from "../components/InputField";
 import Loading from "../components/Loading";
 import { ChatTypes } from "../models/ChatInfo";
 import { ErrorWrapper } from "../models/ResponseWrapper";
-import { ProfileFormSchema } from "../utils/Schemas";
-import PopupContainer from "./PopupContainer";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
+import PopupContainer from "./PopupContainer";
 
 type Props = {
 	visible: boolean;
 	closePopup: () => void;
 };
 
-export default function CreateChat({ visible, closePopup }: Props) {
+export default function CreateChatPopup({ visible, closePopup }: Props) {
 	const [name, setName] = useState<string>("");
 	const [type, setType] = useState<ChatTypes>("private");
 	const [members, setMembers] = useState<string[]>([]);
@@ -88,7 +87,6 @@ export default function CreateChat({ visible, closePopup }: Props) {
 							value={name}
 							onChange={setName}
 							className={"w-full"}
-							schema={ProfileFormSchema.shape.lastName}
 						/>
 
 						<form className="w-full flex items-center justify-between">
@@ -128,13 +126,26 @@ export default function CreateChat({ visible, closePopup }: Props) {
 						value={member}
 						onChange={setMember}
 						className="w-full"
-						schema={ProfileFormSchema.shape.lastName}
 					/>
 				)}
 
 				<Button
 					accent="blue"
-					onClick={() => createChat()}
+					onClick={() => {
+						if (type === "group") {
+							if (name.length === 0) {
+								ShowErrorToast("Please specify a name for the group");
+							} else {
+								createChat();
+							}
+						} else {
+							if (member.length === 0) {
+								ShowErrorToast("Please write the username");
+							} else {
+								createChat();
+							}
+						}
+					}}
 					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-blue/10 hover:text-blue mb-0 mt-auto">
 					Create {type} Chat
 					<AddSquare size={18} />
