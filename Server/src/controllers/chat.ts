@@ -240,11 +240,26 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 		{ _id: 0, __v: 0 },
 		{ sort: { sendDate: 0 }, limit: count }
 	)
+		.populate("senderId")
 		.then((messages) => {
 			if (!messages) throw new Error("messageId is invalid!");
 			res.status(200).json({
 				status: "success",
-				data: messages,
+				data: messages.reduce((acc: any[], message) => {
+					acc.push({
+						chatId: message.chatId,
+						sender: {
+							username: message.senderId.username,
+							email: message.senderId.email,
+							firstName: message.senderId.firstName,
+							lastName: message.senderId.lastName,
+							avatarUrl: message.senderId.avatarUrl,
+						},
+						body: message.body,
+						sendDate: message.sendDate,
+					});
+					return acc;
+				}, []),
 			});
 		})
 		.catch((err) => {
