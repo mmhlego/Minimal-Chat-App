@@ -13,7 +13,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge";
 import { DeleteChatMessage, GetChatHistory, GetChatInfo, SendChatMessage } from "../api/ChatApis";
-import { useIsVisible } from "../hooks/UseIsVisible";
+import { useInView } from "react-intersection-observer";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
 import { scrollToEnd } from "../utils/ScrollUtils";
@@ -37,8 +37,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	const [newMessage, setNewMessage] = useState("");
 	const [replyMessage, setReplyMessage] = useState<ChatMessage | undefined>(undefined);
 
-	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
-	const [historyRef, historyIsVisible] = useIsVisible<HTMLDivElement>();
+	const [endRef, endIsVisible] = useInView();
+	const [historyRef, historyIsVisible] = useInView();
 	const [historyDate, setHistoryDate] = useState<string>(new Date().toISOString());
 	const [historyAvailable, setHistoryAvailable] = useState(true);
 
@@ -61,7 +61,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	// Popups
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
-	// Apis // TODO
+	// Apis
 	const { data: chatInfo, refetch: getChatInfo } = useQuery(
 		[chatId],
 		() => GetChatInfo(chatId!),
@@ -75,7 +75,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						pauseOnHover: false
 					});
 				} else {
-					loadHistory(); //TODO
+					loadHistory();
 				}
 			},
 			onError() {
@@ -90,7 +90,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		}
 	);
 
-	const loadCount = 10;
+	const loadCount = 15;
 	const {
 		data: _,
 		refetch: loadHistory,
@@ -206,8 +206,9 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	}, [chatId]);
 
 	useEffect(() => {
+		console.log(historyIsVisible);
 		if (historyIsVisible) {
-			// loadHistory(); //TODO
+			loadHistory();
 		}
 	}, [historyIsVisible]);
 
@@ -296,7 +297,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 							chatId={chatInfo.data.chatId}
 							chatType={chatInfo.data.type}
 							message={m}
-							fromUser={m.sender.username === "MMHLEGO"}
+							fromUser={m.sender.username === "mmhejazi"}
 							selectMessage={setSelectedMessage}
 						/>
 					</div>

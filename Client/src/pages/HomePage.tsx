@@ -3,10 +3,33 @@ import ChatSection from "../components/ChatSection";
 import { twMerge } from "tailwind-merge";
 import ChatList from "../components/ChatList";
 import ProfilePopup from "../popups/ProfilePopup";
+import { io } from "socket.io-client";
 
 export default function HomePage() {
 	const [selectedChat, setSelectedChat] = useState<string | undefined>(undefined);
 	const [profileVisible, setProfileVisible] = useState(false);
+
+	const socketIo = io("http://localhost:3000", {
+		// auth: { //TODO
+		// 	token: "json-web-token"
+		// },
+		query: {
+			// roomNumber: document.getElementById("roomId").value // <- new code
+			roomNumber: selectedChat
+		}
+	});
+
+	const selectChat = (id: string | undefined) => {
+		setSelectedChat((prev) => {
+			if (prev !== undefined) {
+			}
+
+			if (id !== undefined) {
+			}
+
+			return id;
+		});
+	};
 
 	return (
 		<div
@@ -14,13 +37,13 @@ export default function HomePage() {
 			onContextMenu={(e) => e.preventDefault()}>
 			<ChatList
 				openProfile={() => setProfileVisible(true)}
-				setChatId={setSelectedChat}
+				setChatId={selectChat}
 				selectedChatId={selectedChat}
 			/>
 
 			<ChatSection
 				chatId={selectedChat}
-				back={() => setSelectedChat(undefined)}
+				back={() => selectChat(undefined)}
 				className={twMerge(
 					"w-full h-screen absolute md:relative",
 					selectedChat !== undefined ? "left-0" : "left-[100vw] md:left-0"
