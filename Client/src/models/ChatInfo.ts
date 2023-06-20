@@ -1,10 +1,10 @@
 export default interface ChatInfo {
-	ChatId: number;
-	Name: string;
-	UnreadMessageCount: number;
-	LastMessage?: string;
-	LastSendDate?: string;
-	Type: ChatTypes;
+	chatId: string;
+	name: string;
+	unreadMessageCount: number;
+	lastMessage?: string;
+	lastSendDate?: string;
+	type: ChatTypes;
 }
 
 export type ChatTypes = "Group" | "Private";

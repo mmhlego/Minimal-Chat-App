@@ -12,7 +12,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge";
-import { DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
+import { DeleteChatMessage, GetChatHistory, GetChatInfo, SendChatMessage } from "../api/ChatApis";
 import { useIsVisible } from "../hooks/UseIsVisible";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
@@ -23,7 +23,7 @@ import Loading from "./Loading";
 import Message from "./Message";
 
 type Props = {
-	chatId: number;
+	chatId: string | undefined;
 	back: () => void;
 	className?: string;
 };
@@ -39,14 +39,16 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 	const [endRef, endIsVisible] = useIsVisible<HTMLDivElement>();
 	const [historyRef, historyIsVisible] = useIsVisible<HTMLDivElement>();
-	const [historyDate, setHistoryDate] = useState<string>(new Date().toUTCString());
+	const [historyDate, setHistoryDate] = useState<string>(new Date().toISOString());
 	const [historyAvailable, setHistoryAvailable] = useState(true);
 
 	// Context Menu
-	const [selectedMessage, setSelectedMessage] = useState(-1);
+	const [selectedMessage, setSelectedMessage] = useState<string>();
 	const [contextVisible, setContextVisible] = useState(false);
 	const contextPos = useMemo(() => {
-		const component = document.getElementById(selectedMessage.toString());
+		if (!selectedMessage) return { x: undefined, y: undefined };
+
+		const component = document.getElementById(selectedMessage);
 		if (!component) return { x: undefined, y: undefined };
 
 		const y = Math.max(component.getBoundingClientRect().top, 60) + 5;
@@ -60,33 +62,45 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	const [chatInfoVisible, setChatInfoVisible] = useState(true);
 
 	// Apis // TODO
-	const { data: chatInfo } = useQuery([chatId], () => GetChatInfo(chatId), {
-		onSuccess(data) {
-			if (data.Status === "Error")
+	const { data: chatInfo, refetch: getChatInfo } = useQuery(
+		[chatId],
+		() => GetChatInfo(chatId!),
+		{
+			onSuccess(res) {
+				if (res.status === "error") {
+					toast.error("An error occurred while loading your profile info", {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+				} else {
+					loadHistory(); //TODO
+				}
+			},
+			onError() {
 				toast.error("An error occurred while loading your profile info", {
 					position: "bottom-right",
 					autoClose: 3000,
 					closeOnClick: false,
 					pauseOnHover: false
 				});
-		},
-		onError() {
-			toast.error("An error occurred while loading your profile info", {
-				position: "bottom-right",
-				autoClose: 3000,
-				closeOnClick: false,
-				pauseOnHover: false
-			});
+			},
+			enabled: false
 		}
-	});
+	);
 
 	const loadCount = 10;
-	const { data: _, refetch: loadHistory } = useQuery(
+	const {
+		data: _,
+		refetch: loadHistory,
+		isLoading
+	} = useQuery(
 		[`${chatId}-${historyDate}`],
-		() => GetChatHistory(chatId, historyDate, loadCount),
+		() => GetChatHistory(chatId!, historyDate, loadCount),
 		{
 			onSuccess(res) {
-				if (res.Status === "Error") {
+				if (res.status === "error") {
 					toast.error("An error occurred while loading chat history", {
 						position: "bottom-right",
 						autoClose: 3000,
@@ -96,12 +110,12 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					return;
 				}
 
-				setMessages((m) => [...res.Data, ...m]);
+				setMessages((m) => [...res.data, ...m]);
 
-				if (loadCount !== res.Data.length) {
+				if (loadCount !== res.data.length) {
 					setHistoryAvailable(false);
 				} else {
-					setHistoryDate(res.Data[0].SendDate);
+					setHistoryDate(res.data[0].sendDate);
 				}
 			},
 			onError() {
@@ -112,15 +126,15 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					pauseOnHover: false
 				});
 			},
-			enabled: !!chatInfo
+			enabled: false
 		}
 	);
 
 	const { mutate: deleteSelectedMessage } = useMutation(
-		() => DeleteChatMessage(chatId, selectedMessage),
+		() => DeleteChatMessage(chatId!, selectedMessage ? selectedMessage : ""),
 		{
 			onSuccess() {
-				const component = document.getElementById(selectedMessage.toString());
+				const component = document.getElementById(selectedMessage ? selectedMessage : "");
 				if (component) {
 					component.style.opacity = "0";
 					component.style.marginTop = `-${component.clientHeight}px`;
@@ -132,7 +146,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						})
 						.finished.then(() => {
 							messages.splice(
-								messages.findIndex((v) => v.Id === selectedMessage),
+								messages.findIndex((v) => v.id === selectedMessage),
 								1
 							);
 							console.log(1213);
@@ -153,57 +167,51 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		}
 	);
 
-	const sendMessage = () => {
-		const body = newMessage.trim();
+	const { mutate: sendMessage } = useMutation(
+		({ body, replyId }: { body: string; replyId?: string }) =>
+			SendChatMessage(chatId!, body, replyId),
+		{
+			onSuccess() {}
+		}
+	);
+
+	const sendNewMessage = () => {
+		if (newMessage.trim().length === 0) return;
+
+		sendMessage({ body: newMessage.trim(), replyId: replyMessage?.id });
+
 		setNewMessage("");
 		setReplyMessage(undefined);
 
-		const message: ChatMessage = {
-			Id: messages.length + 1,
-			Body: body,
-			SendDate: new Date().toUTCString(),
-			ReplyTo: replyMessage?.Id,
-			Sender: {
-				Username: "MMHLEGO",
-				LastSeen: new Date().toUTCString(),
-				AvatarUrl: ""
-			},
-			Attachment: undefined // TODO
-		};
-
-		messages.push(message);
-
 		setTimeout(() => scrollToEnd(containerRef), 100);
-
-		//TODO: Send Message (text + reply)
 	};
 
 	const closeContextMenu = () => {
 		setContextVisible(false);
-		setTimeout(() => setSelectedMessage(-1), 200);
+		setTimeout(() => setSelectedMessage(undefined), 200);
 	};
 
 	useEffect(() => {
 		setNewMessage("");
-		setSelectedMessage(-1);
+		setSelectedMessage(undefined);
 		setContextVisible(false);
 		setChatInfoVisible(false);
-		// setMessages([]); //TODO
+		setMessages([]);
+
+		if (chatId !== undefined) {
+			getChatInfo();
+		}
 
 		setTimeout(() => scrollToEnd(containerRef), 100);
 	}, [chatId]);
 
 	useEffect(() => {
-		console.log(endIsVisible);
-	}, [endIsVisible]);
-
-	useEffect(() => {
 		if (historyIsVisible) {
-			loadHistory();
+			// loadHistory(); //TODO
 		}
 	}, [historyIsVisible]);
 
-	if (chatId == -1) {
+	if (chatId === undefined) {
 		return (
 			<div
 				className={twMerge(
@@ -225,6 +233,19 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					className
 				)}>
 				<Loading />
+			</div>
+		);
+	}
+
+	if (chatInfo.status === "error") {
+		return (
+			<div
+				className={twMerge(
+					"w-full h-full text-white border-l border-white/50",
+					"grid place-content-center text-xl font-medium italic bg-gradient-to-br from-green via-cyan to-blue",
+					className
+				)}>
+				An Error Ocurred
 			</div>
 		);
 	}
@@ -252,8 +273,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				<div
 					className="flex items-center gap-2 pr-5 cursor-pointer"
 					onClick={() => setChatInfoVisible(true)}>
-					<ChatIcon name={chatInfo.Data.Name} className="border-none" />
-					<p>{chatInfo?.Data.Name}</p>
+					<ChatIcon name={chatInfo.data.name} className="border-none" />
+					<p>{chatInfo?.data.name}</p>
 				</div>
 			</div>
 
@@ -269,13 +290,13 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 				{/* {messages.slice(0, -1).map((m) => ( */}
 				{messages.map((m) => (
-					<div key={m.Id} ref={endRef} className="w-full flex flex-col">
+					<div key={m.id} ref={endRef} className="w-full flex flex-col">
 						<Message
-							key={m.Id}
-							chatId={chatInfo.Data.ChatId}
-							chatType={chatInfo.Data.Type}
+							key={m.id}
+							chatId={chatInfo.data.chatId}
+							chatType={chatInfo.data.type}
 							message={m}
-							fromUser={m.Sender.Username === "MMHLEGO"}
+							fromUser={m.sender.username === "MMHLEGO"}
 							selectMessage={setSelectedMessage}
 						/>
 					</div>
@@ -302,7 +323,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					)}>
 					<Back />
 					<p className="ellipsis w-96 italic text-gray-400 text-center">
-						{replyMessage?.Body}
+						{replyMessage?.body}
 					</p>
 					<Button
 						secondary
@@ -334,7 +355,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 									e.currentTarget.selectionStart = e.currentTarget.value.length;
 								} else {
-									sendMessage();
+									sendNewMessage();
 								}
 							}
 						}}
@@ -342,7 +363,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					<Button accent="cyan" className="rounded-full p-2">
 						<AttachCircle className="w-5 h-5" />
 					</Button>
-					<Button accent="green" className="rounded-full p-2" onClick={sendMessage}>
+					<Button accent="green" className="rounded-full p-2" onClick={sendNewMessage}>
 						<Send className="w-5 h-5" />
 					</Button>
 				</div>
@@ -367,9 +388,9 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						className="text-black hover:bg-gray-200 gap-8 shadow-none justify-between pr-1.5"
 						noBorder
 						onClick={() => {
-							const message = messages.find((v) => v.Id == selectedMessage);
+							const message = messages.find((v) => v.id == selectedMessage);
 							if (message) {
-								navigator.clipboard.writeText(message.Body);
+								navigator.clipboard.writeText(message.body);
 								toast.success("Coppied to clipboard", {
 									position: "bottom-right",
 									pauseOnHover: false,
@@ -387,7 +408,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						className="text-black hover:bg-gray-200 gap-8 shadow-none justify-between pr-1.5"
 						noBorder
 						onClick={() => {
-							setReplyMessage(messages.find((v) => v.Id == selectedMessage));
+							setReplyMessage(messages.find((v) => v.id == selectedMessage));
 						}}>
 						<BackSquare />
 					</Button>
@@ -406,7 +427,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 			{/* Chat Info */}
 			<ChatInfoPopup
-				chatInfo={chatInfo.Data}
+				chatInfo={chatInfo.data}
 				visible={chatInfoVisible}
 				closePopup={() => setChatInfoVisible(false)}
 			/>

@@ -1,4 +1,11 @@
-export interface ResponseWrapper<K, T = "Success" | "Error"> {
-	Status: T;
-	Data: K;
-}
+export type ResponseWrapper<K = string> =
+	| {
+			status: "success";
+			data: K;
+	  }
+	| ErrorWrapper;
+
+export type ErrorWrapper = {
+	status: "error";
+	data: string;
+};

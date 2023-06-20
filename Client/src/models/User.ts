@@ -1,7 +1,7 @@
 export default interface User {
-	Username: string;
-	Email: string;
-	FirstName: string;
-	LastName: string;
-	AvatarUrl: string;
+	username: string;
+	email: string;
+	firstName: string;
+	lastName: string;
+	avatarUrl?: string;
 }

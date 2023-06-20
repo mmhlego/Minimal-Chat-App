@@ -5,7 +5,7 @@ import ChatList from "../components/ChatList";
 import ProfilePopup from "../popups/ProfilePopup";
 
 export default function HomePage() {
-	const [selectedChat, setSelectedChat] = useState(-1);
+	const [selectedChat, setSelectedChat] = useState<string | undefined>(undefined);
 	const [profileVisible, setProfileVisible] = useState(false);
 
 	return (
@@ -20,10 +20,10 @@ export default function HomePage() {
 
 			<ChatSection
 				chatId={selectedChat}
-				back={() => setSelectedChat(-1)}
+				back={() => setSelectedChat(undefined)}
 				className={twMerge(
 					"w-full h-screen absolute md:relative",
-					selectedChat !== -1 ? "left-0" : "left-[100vw] md:left-0"
+					selectedChat !== undefined ? "left-0" : "left-[100vw] md:left-0"
 				)}
 			/>
 

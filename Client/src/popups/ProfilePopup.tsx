@@ -19,11 +19,11 @@ type Props = {
 
 export default function ProfilePopup({ visible, closePopup }: Props) {
 	const [profile, setProfile] = useState<User>({
-		Username: "",
-		FirstName: "",
-		LastName: "",
-		Email: "",
-		AvatarUrl: ""
+		username: "",
+		firstName: "",
+		lastName: "",
+		email: "",
+		avatarUrl: undefined
 	});
 
 	const handleError = () => {
@@ -38,9 +38,10 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 	const { error, isLoading } = useQuery(["userProfile"], () => GetProfile(), {
 		cacheTime: 0,
+		enabled: visible,
 		onSuccess(data) {
-			if (data.Status === "Error") handleError();
-			else setProfile(data.Data);
+			if (data.status === "error") handleError();
+			else setProfile(data.data);
 		},
 		onError() {
 			handleError();
@@ -50,11 +51,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 	const { mutate: updateProfile } = useMutation(
 		() =>
 			UpdateProfile(
-				profile.Username,
-				profile.Email,
-				profile.FirstName,
-				profile.LastName,
-				profile.AvatarUrl
+				profile.username,
+				profile.email,
+				profile.firstName,
+				profile.lastName,
+				profile.avatarUrl
 			),
 		{
 			onSuccess() {
@@ -92,14 +93,14 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 	return (
 		<PopupContainer visible={visible} closePopup={() => {}}>
 			<div className="bg-white border border-gray-300 shadow-lg rounded-lg p-4 h-2/3 w-11/12 sm:w-1/2 lg:w-1/3 overflow-x-hidden overflow-y-auto text-black flex flex-col items-center gap-5 dark-scroll relative">
-				{profile.AvatarUrl ? (
+				{profile.avatarUrl ? (
 					<img
 						className={twMerge("h-16 w-16 rounded-full border border-gray-200")}
-						src={profile.AvatarUrl}
+						src={profile.avatarUrl}
 					/>
 				) : (
 					<ChatIcon
-						name={profile.Username}
+						name={profile.username}
 						className="h-16 w-16 py-4 text-2xl self-center"
 					/>
 				)}
@@ -107,11 +108,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 				<h2 className="font-semibold text-xl">Account Info:</h2>
 				<InputField
 					label="Username"
-					initialValue={profile.Username}
+					initialValue={profile.username}
 					onChange={(e) => {
 						setProfile({
 							...profile,
-							Username: e
+							username: e
 						});
 					}}
 					hint="At least 8 characters long"
@@ -121,11 +122,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="First Name"
-					initialValue={profile.FirstName}
+					initialValue={profile.firstName}
 					onChange={(e) => {
 						setProfile({
 							...profile,
-							FirstName: e
+							firstName: e
 						});
 					}}
 					hint="At least 2 characters long"
@@ -135,11 +136,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="Last Name"
-					initialValue={profile.LastName}
+					initialValue={profile.lastName}
 					onChange={(e) => {
 						setProfile({
 							...profile,
-							LastName: e
+							lastName: e
 						});
 					}}
 					hint="At least 2 characters long"
@@ -149,11 +150,11 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="Avatar Url"
-					initialValue={profile.AvatarUrl}
+					initialValue={profile.avatarUrl}
 					onChange={(e) => {
 						setProfile({
 							...profile,
-							AvatarUrl: e
+							avatarUrl: e
 						});
 					}}
 					hint="At least 8 characters long"

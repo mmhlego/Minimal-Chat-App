@@ -47,33 +47,35 @@ export default function TestPage() {
 			<TestSection dir="flex-col">
 				<Message
 					message={{
-						Id: 1,
-						SendDate: "2023-06-08T15:30:00.000Z",
-						Body: "سلام چطوری؟",
-						Sender: {
-							Username: "Mehdi Okh",
-							LastSeen: "2023-06-08T15:30:00.000Z",
-							AvatarUrl: ""
-						},
-						Attachments: []
+						id: "1",
+						sendDate: "2023-06-08T15:30:00.000Z",
+						body: "سلام چطوری؟",
+						sender: {
+							username: "Mehdi Okh",
+							lastSeen: "2023-06-08T15:30:00.000Z",
+							avatarUrl: ""
+						}
 					}}
 					fromUser={false}
 					selectMessage={console.log}
+					chatId={""}
+					chatType="Group"
 				/>
 				<Message
 					message={{
-						Id: 2,
-						SendDate: "2023-06-08T15:31:00.000Z",
-						Body: "مرسی چطوری؟",
-						Sender: {
-							Username: "MMHLEGO",
-							LastSeen: "2023-06-08T15:30:00.000Z",
-							AvatarUrl: ""
-						},
-						Attachments: []
+						id: "2",
+						sendDate: "2023-06-08T15:31:00.000Z",
+						body: "مرسی چطوری؟",
+						sender: {
+							username: "MMHLEGO",
+							lastSeen: "2023-06-08T15:30:00.000Z",
+							avatarUrl: ""
+						}
 					}}
 					fromUser={true}
 					selectMessage={console.log}
+					chatId={""}
+					chatType="Group"
 				/>
 			</TestSection>
 		</div>

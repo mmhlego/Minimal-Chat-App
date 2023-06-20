@@ -45,7 +45,7 @@ export async function UpdateProfile(
 	email: string,
 	firstName: string,
 	lastName: string,
-	avatarUrl: string
+	avatarUrl?: string
 ): Promise<ResponseWrapper<string>> {
 	const response = await axios.put("/", {
 		username,

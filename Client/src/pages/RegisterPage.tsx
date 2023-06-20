@@ -9,6 +9,8 @@ import { useMutation } from "@tanstack/react-query";
 import { Register } from "../api/AuthApis";
 import Loading from "../components/Loading";
 import { ArrowRight } from "iconsax-react";
+import { AxiosError } from "axios";
+import { ErrorWrapper } from "../models/ResponseWrapper";
 
 type Props = {};
 
@@ -26,18 +28,29 @@ export default function RegisterPage({}: Props) {
 	const { mutate: register, isLoading } = useMutation(
 		() => Register(username, password, email, firstName, lastName, avatar),
 		{
-			onSuccess() {
-				toast.success("Success. Redirecting...", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+			onSuccess(res) {
+				if (res.status === "success") {
+					localStorage.setItem("jwt", res.data);
 
-				setTimeout(() => navigate("/home"), 4000);
+					toast.success("Success. Redirecting...", {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+
+					setTimeout(() => navigate("/home"), 4000);
+				} else {
+					toast.error(res.data, {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+				}
 			},
-			onError() {
-				toast.error("An Error Occurred", {
+			onError(err: AxiosError<ErrorWrapper>) {
+				toast.error(err.response ? err.response.data.data : "An Error Occurred", {
 					position: "bottom-right",
 					autoClose: 3000,
 					closeOnClick: false,
@@ -49,7 +62,7 @@ export default function RegisterPage({}: Props) {
 
 	return (
 		<div className="w-screen h-screen overflow-hidden flex items-center justify-center bg-gradient-to-br from-blue to-purple p-2">
-			<div className="w-full h-fit sm:w-1/2 lg:w-1/3 xl:w-1/4 bg-white rounded-md border border-gray-200 drop-shadow-lg p-8 flex flex-col items-center justify-center gap-4">
+			<form className="w-full h-fit sm:w-1/2 lg:w-1/3 xl:w-1/4 bg-white rounded-md border border-gray-200 drop-shadow-lg p-8 flex flex-col items-center justify-center gap-4">
 				<h2 className="font-semibold text-3xl text-blue mb-2">Register</h2>
 				<InputField
 					label="Username"
@@ -65,6 +78,7 @@ export default function RegisterPage({}: Props) {
 					hint="At least 8 characters long"
 					className="w-full"
 					schema={RegisterFormSchema.shape.password}
+					type="password"
 				/>
 
 				<InputField
@@ -73,6 +87,7 @@ export default function RegisterPage({}: Props) {
 					hint="Must be same as password"
 					className="w-full"
 					schema={RegisterFormSchema.shape.password.refine((v) => v == password)}
+					type="password"
 				/>
 
 				<InputField
@@ -153,7 +168,7 @@ export default function RegisterPage({}: Props) {
 						Login!
 					</a>
 				</span>
-			</div>
+			</form>
 		</div>
 	);
 }

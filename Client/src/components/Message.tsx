@@ -5,13 +5,14 @@ import { GetChatMessage } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import Loading from "./Loading";
 import { ChatTypes } from "../models/ChatInfo";
+import { scrollToMessage } from "../utils/ScrollUtils";
 
 type Props = {
-	chatId: number;
+	chatId: string;
 	chatType: ChatTypes;
 	message: ChatMessage;
 	fromUser: boolean;
-	selectMessage: (index: number) => void;
+	selectMessage: (index: string) => void;
 };
 
 export default function Message({ chatId, chatType, message, fromUser, selectMessage }: Props) {
@@ -24,16 +25,16 @@ export default function Message({ chatId, chatType, message, fromUser, selectMes
 	const replyOtherUserStyle = "bg-white/20 text-white border border-white/50 rounded-ss";
 
 	const { data: replyMessage } = useQuery(
-		[message.ReplyTo],
-		() => GetChatMessage(chatId, message.ReplyTo!),
+		[message.replyTo],
+		() => GetChatMessage(chatId, message.replyTo!),
 		{
-			enabled: message.ReplyTo !== undefined
+			enabled: message.replyTo !== undefined
 		}
 	);
 
 	return (
 		<div
-			id={message.Id.toString()}
+			id={message.id.toString()}
 			className={twMerge(
 				"bg-white p-2 w-fit rounded-2xl relative border border-white/20 shadow-lg max-w-[95%] duration-300",
 				"before:absolute before:border-4 before:border-transparent before:z-30",
@@ -41,25 +42,25 @@ export default function Message({ chatId, chatType, message, fromUser, selectMes
 			)}
 			onContextMenu={(e) => {
 				e.preventDefault();
-				selectMessage(message.Id);
+				selectMessage(message.id);
 			}}>
-			{message.ReplyTo && (
+			{message.replyTo && (
 				<p
 					className={twMerge(
 						"gap-4 italic text-sm text-center ellipsis px-2 py-1 rounded-t-xl rounded-b -mt-1 mb-1 -mx-1",
 						fromUser ? replyFromUserStyle : replyOtherUserStyle
 					)}>
-					{replyMessage ? (
+					{replyMessage?.status === "success" ? (
 						<>
 							<Back className="inline-block mr-2" size={20} />
-							{replyMessage.Data.Body}
+							{replyMessage.data.body}
 						</>
 					) : (
 						<Loading className="inline-block w-4 h-4 -mb-1" size="small" />
 					)}
 				</p>
 			)}
-			<p>{message.Body}</p>
+			<p>{message.body}</p>
 		</div>
 	);
 }
