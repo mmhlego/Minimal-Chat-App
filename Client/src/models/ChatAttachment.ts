@@ -1,9 +1,9 @@
 export default interface ChatAttachment {
-	Id: number;
-	Name: string;
-	UploadDate: Date;
-	Url: string;
-	Type: AttachmentTypes;
+	id: number;
+	name: string;
+	uploadDate: Date;
+	url: string;
+	type: AttachmentTypes;
 }
 
 export type AttachmentTypes = "File" | "Image" | "Video";

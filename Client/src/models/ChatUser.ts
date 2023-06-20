@@ -1,5 +1,5 @@
 export default interface ChatUser {
-	Username: string;
-	AvatarUrl: string;
-	LastSeen: string;
+	username: string;
+	avatarUrl: string;
+	lastSeen: string;
 }

@@ -27,11 +27,13 @@ export default function Button({
 	const primaryStyle = `text-white bg-${color}/90 font-normal`;
 	const secondaryStyle = `text-${color} bg-${color}/10 font-medium`;
 
-	// ${color} => ${color}
-
 	return (
 		<button
-			onClick={disabled ? undefined : onClick}
+			formAction="submit"
+			onClick={(e) => {
+				e.preventDefault();
+				if (!disabled && onClick) onClick(e);
+			}}
 			className={twMerge(
 				`shadow-lg shadow-black/15 flex gap-1 items-center justify-center py-1.5 px-3 rounded-md border-${color} duration-300 outline-0`,
 				noBorder ? "m-[2px]" : "border-2",

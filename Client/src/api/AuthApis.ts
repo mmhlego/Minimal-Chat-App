@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { ResponseWrapper } from "../models/ResponseWrapper";
 import User from "../models/User";
 
@@ -45,7 +45,7 @@ export async function UpdateProfile(
 	email: string,
 	firstName: string,
 	lastName: string,
-	avatarUrl: string
+	avatarUrl?: string
 ): Promise<ResponseWrapper<string>> {
 	const response = await axios.put("/", {
 		username,

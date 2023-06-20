@@ -1,9 +1,12 @@
+import { useQuery } from "@tanstack/react-query";
 import { Add } from "iconsax-react";
-import Button from "./Button";
 import { useEffect, useState } from "react";
-import Header from "./Header";
+import { GetChatsList } from "../api/ChatApis";
 import ChatInfo from "../models/ChatInfo";
+import Button from "./Button";
 import ChatItem from "./ChatItem";
+import Header from "./Header";
+import { toast } from "react-toastify";
 
 type Props = {
 	selectedChatId?: number;
@@ -14,44 +17,28 @@ type Props = {
 export default function ChatList({ selectedChatId, openProfile, setChatId }: Props) {
 	const [searchText, setSearchText] = useState("");
 
-	const [chatList, setChatList] = useState<ChatInfo[]>([
-		{
-			ChatId: 1,
-			Name: "Sample Chat",
-			UnreadMessageCount: 5,
-			LastMessage: "سلام خوبی؟",
-			LastSendDate: new Date(2023, 5, 6, 2, 21, 15).toISOString(),
-			Type: "Private"
-		},
-		{
-			ChatId: 2,
-			Name: "Good Group",
-			UnreadMessageCount: 0,
-			LastMessage: "چخبرا؟",
-			LastSendDate: new Date(2023, 5, 6, 1, 19, 15).toISOString(),
-			Type: "Group"
-		},
-		{
-			ChatId: 3,
-			Name: "Kelas IOT",
-			UnreadMessageCount: 1,
-			LastMessage: "سلام",
-			LastSendDate: new Date(2022, 5, 5, 12, 21, 15).toISOString(),
-			Type: "Private"
-		},
-		{
-			ChatId: 4,
-			Name: "Mehdi Okhravi",
-			UnreadMessageCount: 0,
-			Type: "Private"
-		}
-	]);
-
+	const [chatList, setChatList] = useState<ChatInfo[]>([]);
 	const [filteredList, setFilteredList] = useState<ChatInfo[]>([]);
+
+	const { data: _ } = useQuery(["chats"], () => GetChatsList(), {
+		cacheTime: 0,
+		onSuccess(res) {
+			if (res.status === "success") {
+				setChatList(res.data);
+			} else {
+				toast.error("An error occurred while loading chat list", {
+					position: "bottom-right",
+					autoClose: 3000,
+					closeOnClick: false,
+					pauseOnHover: false
+				});
+			}
+		}
+	});
 
 	useEffect(() => {
 		setFilteredList(
-			chatList.filter((c) => c.Name.toLowerCase().includes(searchText.toLowerCase()))
+			chatList.filter((c) => c.name.toLowerCase().includes(searchText.toLowerCase()))
 		);
 	}, [chatList, searchText]);
 

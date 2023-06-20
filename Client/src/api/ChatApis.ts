@@ -4,7 +4,7 @@ import ChatInfo, { ChatTypes } from "../models/ChatInfo";
 import ChatUser from "../models/ChatUser";
 import ChatMessage from "../models/ChatMessage";
 
-export async function ChatsList(): Promise<ResponseWrapper<ChatInfo[]>> {
+export async function GetChatsList(): Promise<ResponseWrapper<ChatInfo[]>> {
 	const response = await axios.get(`/chats`);
 	return response.data;
 }

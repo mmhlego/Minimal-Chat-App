@@ -61,8 +61,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 	// Apis // TODO
 	const { data: chatInfo } = useQuery([chatId], () => GetChatInfo(chatId), {
-		onSuccess(data) {
-			if (data.Status === "Error")
+		onSuccess(res) {
+			if (res.status === "error")
 				toast.error("An error occurred while loading your profile info", {
 					position: "bottom-right",
 					autoClose: 3000,
@@ -77,7 +77,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				closeOnClick: false,
 				pauseOnHover: false
 			});
-		}
+		},
+		enabled: chatId !== -1
 	});
 
 	const loadCount = 10;
@@ -86,7 +87,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		() => GetChatHistory(chatId, historyDate, loadCount),
 		{
 			onSuccess(res) {
-				if (res.Status === "Error") {
+				if (res.status === "error") {
 					toast.error("An error occurred while loading chat history", {
 						position: "bottom-right",
 						autoClose: 3000,
@@ -96,12 +97,12 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					return;
 				}
 
-				setMessages((m) => [...res.Data, ...m]);
+				setMessages((m) => [...res.data, ...m]);
 
-				if (loadCount !== res.Data.length) {
+				if (loadCount !== res.data.length) {
 					setHistoryAvailable(false);
 				} else {
-					setHistoryDate(res.Data[0].SendDate);
+					setHistoryDate(res.data[0].sendDate);
 				}
 			},
 			onError() {
@@ -132,7 +133,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						})
 						.finished.then(() => {
 							messages.splice(
-								messages.findIndex((v) => v.Id === selectedMessage),
+								messages.findIndex((v) => v.id === selectedMessage),
 								1
 							);
 							console.log(1213);
@@ -159,16 +160,16 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		setReplyMessage(undefined);
 
 		const message: ChatMessage = {
-			Id: messages.length + 1,
-			Body: body,
-			SendDate: new Date().toUTCString(),
-			ReplyTo: replyMessage?.Id,
-			Sender: {
-				Username: "MMHLEGO",
-				LastSeen: new Date().toUTCString(),
-				AvatarUrl: ""
+			id: messages.length + 1,
+			body: body,
+			sendDate: new Date().toUTCString(),
+			replyTo: replyMessage?.id,
+			sender: {
+				username: "MMHLEGO",
+				lastSeen: new Date().toUTCString(),
+				avatarUrl: ""
 			},
-			Attachment: undefined // TODO
+			attachment: undefined // TODO
 		};
 
 		messages.push(message);
@@ -252,8 +253,8 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				<div
 					className="flex items-center gap-2 pr-5 cursor-pointer"
 					onClick={() => setChatInfoVisible(true)}>
-					<ChatIcon name={chatInfo.Data.Name} className="border-none" />
-					<p>{chatInfo?.Data.Name}</p>
+					<ChatIcon name={chatInfo.data.name} className="border-none" />
+					<p>{chatInfo?.data.name}</p>
 				</div>
 			</div>
 
@@ -269,13 +270,13 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 				{/* {messages.slice(0, -1).map((m) => ( */}
 				{messages.map((m) => (
-					<div key={m.Id} ref={endRef} className="w-full flex flex-col">
+					<div key={m.id} ref={endRef} className="w-full flex flex-col">
 						<Message
-							key={m.Id}
-							chatId={chatInfo.Data.ChatId}
-							chatType={chatInfo.Data.Type}
+							key={m.id}
+							chatId={chatInfo.data.chatId}
+							chatType={chatInfo.data.type}
 							message={m}
-							fromUser={m.Sender.Username === "MMHLEGO"}
+							fromUser={m.sender.username === "MMHLEGO"}
 							selectMessage={setSelectedMessage}
 						/>
 					</div>
@@ -302,7 +303,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 					)}>
 					<Back />
 					<p className="ellipsis w-96 italic text-gray-400 text-center">
-						{replyMessage?.Body}
+						{replyMessage?.body}
 					</p>
 					<Button
 						secondary
@@ -367,9 +368,9 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						className="text-black hover:bg-gray-200 gap-8 shadow-none justify-between pr-1.5"
 						noBorder
 						onClick={() => {
-							const message = messages.find((v) => v.Id == selectedMessage);
+							const message = messages.find((v) => v.id == selectedMessage);
 							if (message) {
-								navigator.clipboard.writeText(message.Body);
+								navigator.clipboard.writeText(message.body);
 								toast.success("Coppied to clipboard", {
 									position: "bottom-right",
 									pauseOnHover: false,
@@ -387,7 +388,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						className="text-black hover:bg-gray-200 gap-8 shadow-none justify-between pr-1.5"
 						noBorder
 						onClick={() => {
-							setReplyMessage(messages.find((v) => v.Id == selectedMessage));
+							setReplyMessage(messages.find((v) => v.id == selectedMessage));
 						}}>
 						<BackSquare />
 					</Button>
@@ -406,7 +407,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 
 			{/* Chat Info */}
 			<ChatInfoPopup
-				chatInfo={chatInfo.Data}
+				chatInfo={chatInfo.data}
 				visible={chatInfoVisible}
 				closePopup={() => setChatInfoVisible(false)}
 			/>
