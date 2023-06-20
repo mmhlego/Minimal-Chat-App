@@ -73,7 +73,7 @@ export default function HomePage() {
 
 			{/* <ProfilePopup visible={profileVisible} closePopup={() => setProfileVisible(false)} /> */}
 
-			{/* <CreateChatPopup visible={createVisible} closePopup={() => setCreateVisible(false)} /> */}
+			<CreateChatPopup visible={createVisible} closePopup={() => setCreateVisible(false)} />
 		</div>
 	);
 }

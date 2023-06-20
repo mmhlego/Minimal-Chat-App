@@ -235,30 +235,32 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 	Message.find(
 		{ $and: [{ chatId }, { sendDate: { $lt: date } }] },
 		{ __v: 0 },
-		{ sort: { sendDate: 0 }, limit: count }
+		{ sort: { sendDate: -1 }, limit: count }
 	)
 		.populate("senderId")
 		.then((messages) => {
 			if (!messages) throw new Error("messageId is invalid!");
 			res.status(200).json({
 				status: "success",
-				data: messages.reduce((acc: any[], message) => {
-					acc.push({
-						id: message._id,
-						chatId: message.chatId,
-						sender: {
-							username: message.senderId.username,
-							// email: message.senderId.email,
-							// firstName: message.senderId.firstName,
-							// lastName: message.senderId.lastName,
-							avatarUrl: message.senderId.avatarUrl,
-						},
-						body: message.body,
-						sendDate: message.sendDate,
-						replyTo: message.replyTo,
-					});
-					return acc;
-				}, []),
+				data: messages
+					.reduce((acc: any[], message) => {
+						acc.push({
+							id: message._id,
+							chatId: message.chatId,
+							sender: {
+								username: message.senderId.username,
+								// email: message.senderId.email,
+								// firstName: message.senderId.firstName,
+								// lastName: message.senderId.lastName,
+								avatarUrl: message.senderId.avatarUrl,
+							},
+							body: message.body,
+							sendDate: message.sendDate,
+							replyTo: message.replyTo,
+						});
+						return acc;
+					}, [])
+					.reverse(),
 			});
 		})
 		.catch((err) => {
