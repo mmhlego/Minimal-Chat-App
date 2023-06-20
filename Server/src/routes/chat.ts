@@ -16,12 +16,13 @@ import {
 } from "../middlewares/haveAccess";
 import isAuth from "../middlewares/isAuth";
 import { isRelatedToChat } from "../middlewares/isRelatedToChat";
+import { isUserExist } from "../middlewares/isUserExist";
 
 const express = require("express");
 
 const router = express.Router();
 
-router.post("/chats", isAuth, createChat);
+router.post("/chats", isAuth, isUserExist, createChat);
 
 router.get("/chats", isAuth, getChatList);
 
