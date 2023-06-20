@@ -1,20 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { AxiosError } from "axios";
-import { Back, RefreshSquare } from "iconsax-react";
-import { useEffect, useContext, useState } from "react";
+import axios, { AxiosError } from "axios";
+import { Back, LogoutCurve, RefreshSquare } from "iconsax-react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router";
 import { twMerge } from "tailwind-merge";
 import { GetProfile, UpdateProfile } from "../api/AuthApis";
 import Button from "../components/Button";
 import ChatIcon from "../components/ChatIcon";
 import InputField from "../components/InputField";
 import Loading from "../components/Loading";
-import { MainContext } from "../context/MainContext";
 import { ErrorWrapper } from "../models/ResponseWrapper";
+import User from "../models/User";
 import { ProfileFormSchema } from "../utils/Schemas";
 import { ShowErrorToast, ShowSuccessToast } from "../utils/Toasts";
 import PopupContainer from "./PopupContainer";
-import User from "../models/User";
-import { useNavigate } from "react-router";
 
 type Props = {
 	visible: boolean;
@@ -22,12 +21,14 @@ type Props = {
 };
 
 export default function ProfilePopup({ visible, closePopup }: Props) {
-	const ctx = useContext(MainContext);
-	ctx.fetchProfile();
-
 	const navigate = useNavigate();
 
-	const [profile, setProfile] = useState<User>(ctx.profile!);
+	const [profile, setProfile] = useState<User>({
+		username: "",
+		email: "",
+		firstName: "",
+		lastName: ""
+	});
 
 	const handleError = () => {
 		closePopup();
@@ -42,7 +43,6 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 			if (res.status === "error") handleError();
 			else {
 				setProfile(res.data);
-				ctx.setProfile(res.data);
 			}
 		},
 		onError() {
@@ -190,6 +190,18 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-blue/10 hover:text-blue">
 					Update Information
 					<RefreshSquare size={18} />
+				</Button>
+
+				<Button
+					accent="red"
+					onClick={() => {
+						localStorage.removeItem("jwt");
+						axios.defaults.headers.common.Authorization = "";
+						navigate("/login");
+					}}
+					className="w-full py-1 gap-1 hover:gap-2.5 hover:bg-red/10 hover:text-red -mt-2">
+					Logout
+					<LogoutCurve size={18} />
 				</Button>
 
 				<Button
