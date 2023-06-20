@@ -1,4 +1,4 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios from "axios";
 import { ResponseWrapper } from "../models/ResponseWrapper";
 import User from "../models/User";
 

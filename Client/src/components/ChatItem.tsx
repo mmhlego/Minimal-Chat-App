@@ -5,15 +5,15 @@ import moment from "moment";
 
 type Props = {
 	info: ChatInfo;
-	selectedId?: number;
-	select: (id: number) => void;
+	selectedId?: string;
+	select: (id: string) => void;
 };
 
 export default function ChatItem({ info, selectedId, select }: Props) {
 	return (
 		<div
 			className={twMerge(
-				"h-14 border-b-2 border-gray-300 grid grid-rows-2 items-center gap-x-1 px-2 py-1 grid-cols-[2.75rem_auto_6rem] cursor-pointer duration-200",
+				"h-14 border-b-2 border-gray-300 grid grid-rows-2 items-center gap-x-1 px-2 py-1 grid-cols-[2.75rem_auto_auto] cursor-pointer duration-200",
 				selectedId === info.chatId ? "bg-gray-200" : ""
 			)}
 			onClick={() => select(info.chatId)}>

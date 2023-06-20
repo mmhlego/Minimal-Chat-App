@@ -25,6 +25,7 @@ function App() {
 		axios.defaults.baseURL = "http://localhost:3000";
 		// axios.defaults.headers.common.Authorization = `Bearer ${user.jwtToken}`;
 		axios.defaults.headers.common.Authorization =
+			// "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3RAdGVzdC5pciIsInVzZXJJZCI6IjY0OTE3NDI1NmNiODAyNjEzZTEzMGZjYSIsImlhdCI6MTY4NzI1OTI3NiwiZXhwIjoxNzE4Nzk1Mjc2fQ.es2wgHcGMWlgRvSn_CJleIOb9mlaSAMjCJ5FLCAEFEw";
 			"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1taGxlZ29AZ21haWwuY29tIiwidXNlcklkIjoiNjQ5MTcwMDA2Y2I4MDI2MTNlMTMwZjdhIiwiaWF0IjoxNjg3MjUyOTkyLCJleHAiOjE3MTg3ODg5OTJ9.3O-doYoO7nlBoTBTI8D79hhd6DVB_FKCSboNGRuuM1A";
 	}, []);
 

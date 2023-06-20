@@ -1,5 +1,5 @@
 export default interface ChatAttachment {
-	id: number;
+	id: string;
 	name: string;
 	uploadDate: Date;
 	url: string;

@@ -43,14 +43,13 @@ export default function ChatInfoPopup({ visible, chatInfo, closePopup }: Props) 
 				<p className="text-center pt-1">Members List:</p>
 				{membersLoading && <Loading className="self-center mt-16" />}
 				<div className="flex flex-col">
-					{members?.data
-						.sort(
-							(a, b) =>
-								new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
-						)
-						.map((member) => (
-							<UserItem key={member.username} info={member} />
-						))}
+					{members?.status === "success" &&
+						members?.data
+							.sort(
+								(a, b) =>
+									new Date(b.lastSeen).getTime() - new Date(a.lastSeen).getTime()
+							)
+							.map((member) => <UserItem key={member.username} info={member} />)}
 				</div>
 			</div>
 		</PopupContainer>

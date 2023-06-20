@@ -1,5 +1,5 @@
 export default interface ChatInfo {
-	chatId: number;
+	chatId: string;
 	name: string;
 	unreadMessageCount: number;
 	lastMessage?: string;

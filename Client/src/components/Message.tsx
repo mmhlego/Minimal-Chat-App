@@ -5,13 +5,14 @@ import { GetChatMessage } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import Loading from "./Loading";
 import { ChatTypes } from "../models/ChatInfo";
+import { scrollToMessage } from "../utils/ScrollUtils";
 
 type Props = {
-	chatId: number;
+	chatId: string;
 	chatType: ChatTypes;
 	message: ChatMessage;
 	fromUser: boolean;
-	selectMessage: (index: number) => void;
+	selectMessage: (index: string) => void;
 };
 
 export default function Message({ chatId, chatType, message, fromUser, selectMessage }: Props) {
@@ -49,7 +50,7 @@ export default function Message({ chatId, chatType, message, fromUser, selectMes
 						"gap-4 italic text-sm text-center ellipsis px-2 py-1 rounded-t-xl rounded-b -mt-1 mb-1 -mx-1",
 						fromUser ? replyFromUserStyle : replyOtherUserStyle
 					)}>
-					{replyMessage ? (
+					{replyMessage?.status === "success" ? (
 						<>
 							<Back className="inline-block mr-2" size={20} />
 							{replyMessage.data.body}

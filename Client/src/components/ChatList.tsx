@@ -9,9 +9,9 @@ import Header from "./Header";
 import { toast } from "react-toastify";
 
 type Props = {
-	selectedChatId?: number;
+	selectedChatId?: string;
 	openProfile: () => void;
-	setChatId: (id: number) => void;
+	setChatId: (id: string) => void;
 };
 
 export default function ChatList({ selectedChatId, openProfile, setChatId }: Props) {
