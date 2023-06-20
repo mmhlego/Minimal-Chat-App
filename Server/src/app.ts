@@ -74,15 +74,10 @@ mongoose
 				console.log("A user disconnected");
 			});
 
-			// Read message recieved from client.
-			socket.on("message_from_client", (data) => {
-				console.log("message_from_client: ", data);
-			});
-
 			// Send a message to the connected client 5 seconds after the connection is created.
-			setTimeout(() => {
-				socket.emit("message_from_server", `Message: ${Math.random()}`);
-			}, 5_000);
+			// setTimeout(() => {
+			socket.emit("message_from_server", `You joined to the socket!`);
+			// }, 5000);
 
 			/**
 			 * New code
@@ -95,14 +90,13 @@ mongoose
 			socket.join(room);
 
 			// Emit to room by room number.
-			setTimeout(() => {
-				socketIo
-					.to(room)
-					.emit(
-						"room-userId",
-						`You are in room number: ${roomNumber}`
-					);
-			}, 2_000);
+			// setTimeout(() => {
+
+			socket.on("message_to_server", (data) => {
+				socketIo.to(room).emit("message", data);
+			});
+
+			// }, 2000);
 		});
 	})
 	.catch((err) => console.log(err));
