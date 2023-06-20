@@ -5,7 +5,7 @@ import { z } from "zod";
 
 type Props = {
 	label?: string;
-	initialValue?: string;
+	value?: string;
 	placeholder?: string;
 	accent?: "" | PrimaryColors;
 	hint?: string;
@@ -19,7 +19,7 @@ type Props = {
 
 export default function InputField({
 	label = "",
-	initialValue = "",
+	value: currentValue,
 	placeholder = "",
 	accent = "",
 	hint = "",
@@ -32,7 +32,7 @@ export default function InputField({
 }: Props) {
 	const [color, setColor] = useState(disabled ? "gray-300" : accent === "" ? "gray-400" : accent);
 
-	const [currentValue, setCurrentValue] = useState(initialValue);
+	// const [currentValue, setCurrentValue] = useState(initialValue);
 	const [focused, setFocused] = useState(false);
 
 	useEffect(() => {
@@ -66,7 +66,7 @@ export default function InputField({
 				value={currentValue}
 				onChange={(e) => {
 					setFocused(true);
-					setCurrentValue(e.target.value);
+					// setCurrentValue(e.target.value);
 					onChange && onChange(e.target.value);
 				}}
 				className={twMerge(

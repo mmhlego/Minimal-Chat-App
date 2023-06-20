@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { twMerge } from "tailwind-merge";
 import Button from "../components/Button";
@@ -11,6 +11,8 @@ import { Back, RefreshSquare } from "iconsax-react";
 import Loading from "../components/Loading";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { GetProfile, UpdateProfile } from "../api/AuthApis";
+import { AxiosError } from "axios";
+import { ErrorWrapper } from "../models/ResponseWrapper";
 
 type Props = {
 	visible: boolean;
@@ -36,7 +38,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 		});
 	};
 
-	const { error, isLoading } = useQuery(["userProfile"], () => GetProfile(), {
+	const { error, isLoading, refetch } = useQuery(["userProfile"], () => GetProfile(), {
 		cacheTime: 0,
 		enabled: visible,
 		onSuccess(data) {
@@ -58,16 +60,25 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 				profile.avatarUrl
 			),
 		{
-			onSuccess() {
-				toast.success("Success. Redirecting...", {
-					position: "bottom-right",
-					autoClose: 3000,
-					closeOnClick: false,
-					pauseOnHover: false
-				});
+			onSuccess(res) {
+				if (res.status === "success") {
+					toast.success("Profile Updated Successfully", {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+				} else {
+					toast.error(res.data, {
+						position: "bottom-right",
+						autoClose: 3000,
+						closeOnClick: false,
+						pauseOnHover: false
+					});
+				}
 			},
-			onError() {
-				toast.error("An Error Occurred", {
+			onError(err: AxiosError<ErrorWrapper>) {
+				toast.error(err.response ? err.response.data.data : "An Error Occurred", {
 					position: "bottom-right",
 					autoClose: 3000,
 					closeOnClick: false,
@@ -76,6 +87,20 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 			}
 		}
 	);
+
+	useEffect(() => {
+		if (visible) {
+			refetch();
+		} else {
+			setProfile({
+				username: "",
+				firstName: "",
+				lastName: "",
+				email: "",
+				avatarUrl: undefined
+			});
+		}
+	}, [visible]);
 
 	if (isLoading)
 		return (
@@ -92,7 +117,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 	return (
 		<PopupContainer visible={visible} closePopup={() => {}}>
-			<div className="bg-white border border-gray-300 shadow-lg rounded-lg p-4 h-2/3 w-11/12 sm:w-1/2 lg:w-1/3 overflow-x-hidden overflow-y-auto text-black flex flex-col items-center gap-5 dark-scroll relative">
+			<form className="bg-white border border-gray-300 shadow-lg rounded-lg p-4 h-2/3 w-11/12 sm:w-1/2 lg:w-1/3 overflow-x-hidden overflow-y-auto text-black flex flex-col items-center gap-5 dark-scroll relative">
 				{profile.avatarUrl ? (
 					<img
 						className={twMerge("h-16 w-16 rounded-full border border-gray-200")}
@@ -108,7 +133,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 				<h2 className="font-semibold text-xl">Account Info:</h2>
 				<InputField
 					label="Username"
-					initialValue={profile.username}
+					value={profile.username}
 					onChange={(e) => {
 						setProfile({
 							...profile,
@@ -122,7 +147,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="First Name"
-					initialValue={profile.firstName}
+					value={profile.firstName}
 					onChange={(e) => {
 						setProfile({
 							...profile,
@@ -136,7 +161,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="Last Name"
-					initialValue={profile.lastName}
+					value={profile.lastName}
 					onChange={(e) => {
 						setProfile({
 							...profile,
@@ -150,7 +175,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 
 				<InputField
 					label="Avatar Url"
-					initialValue={profile.avatarUrl}
+					value={profile.avatarUrl}
 					onChange={(e) => {
 						setProfile({
 							...profile,
@@ -159,7 +184,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 					}}
 					hint="At least 8 characters long"
 					className="w-full"
-					schema={ProfileFormSchema.shape.avatar}
+					schema={ProfileFormSchema.shape.avatarUrl}
 				/>
 
 				<Button
@@ -167,10 +192,12 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 					onClick={() => {
 						const res = ProfileFormSchema.safeParse(profile);
 
+						console.log(profile);
+
 						if (res.success) {
 							updateProfile();
 						} else {
-							console.log(res.error.errors[0].message);
+							console.log(res.error);
 
 							toast.error(res.error.errors[0].message, {
 								position: "bottom-right",
@@ -193,7 +220,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 					className="absolute top-3 left-3 p-0 text-gray-400 shadow-none">
 					<Back size={28} />
 				</Button>
-			</div>
+			</form>
 		</PopupContainer>
 	);
 }

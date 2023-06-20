@@ -13,7 +13,7 @@ export default function Header({ openProfile, setSearchText }: Props) {
 	const [opened, setOpened] = useState(false);
 
 	return (
-		<div className="w-full h-fit bg-gradient-to-br from-green to-cyan">
+		<div className="w-full h-fit bg-gradient-to-br from-green to-cyan text-center">
 			<div className="flex p-2 gap-2 items-center justify-between border-b-2 border-b-white/50">
 				<Button
 					className="p-2 bg-transparent border-none shadow-none"

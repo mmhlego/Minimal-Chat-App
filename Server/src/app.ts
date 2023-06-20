@@ -59,6 +59,7 @@ mongoose
 
 		socketIo.on("connection", (socket) => {
 			console.log("New connection created");
+			socket.emit("message_from_server", `You joined to the socket!`);
 
 			// const token = socket.handshake.auth.token;
 			// console.log('Auth token', token);
@@ -74,29 +75,31 @@ mongoose
 				console.log("A user disconnected");
 			});
 
-			// Send a message to the connected client 5 seconds after the connection is created.
-			// setTimeout(() => {
-			socket.emit("message_from_server", `You joined to the socket!`);
-			// }, 5000);
-
-			/**
-			 * New code
-			 */
 			// Get the room number from the client.
-			const roomNumber: string = socket.handshake.query
+			const roomNumber: string | undefined = socket.handshake.query
 				.roomNumber as string;
 			// Join room for specific users.
 			const room = `room-userId-${roomNumber}`;
 			socket.join(room);
 
-			// Emit to room by room number.
-			// setTimeout(() => {
-
-			socket.on("message_to_server", (data) => {
-				socketIo.to(room).emit("message", data);
+			socket.on("join-conversation", (roomId: string | null) => {
+				console.log("join-conversation", roomId);
+				if (roomId) socket.join(`room-userId-${roomId}`);
 			});
 
-			// }, 2000);
+			socket.on("leave-conversation", (roomId: string | null) => {
+				console.log("leave-conversation", roomId);
+				if (roomId) socket.leave(`room-userId-${roomId}`);
+			});
+
+			/**
+			 * New code
+			 */
+
+			socket.on("send-message", (body: string, replyId?: string) => {
+				console.log("new message", { body, replyId });
+				socketIo.to(room).emit("receive-message", body, replyId);
+			});
 		});
 	})
 	.catch((err) => console.log(err));

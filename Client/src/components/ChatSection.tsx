@@ -9,11 +9,12 @@ import {
 	Send,
 	TrushSquare
 } from "iconsax-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "react-toastify";
-import { twMerge } from "tailwind-merge";
-import { DeleteChatMessage, GetChatHistory, GetChatInfo, SendChatMessage } from "../api/ChatApis";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { toast } from "react-toastify";
+import { Socket } from "socket.io-client";
+import { twMerge } from "tailwind-merge";
+import { DeleteChatMessage, GetChatHistory, GetChatInfo } from "../api/ChatApis";
 import ChatMessage from "../models/ChatMessage";
 import ChatInfoPopup from "../popups/ChatInfoPopup";
 import { scrollToEnd } from "../utils/ScrollUtils";
@@ -24,11 +25,13 @@ import Message from "./Message";
 
 type Props = {
 	chatId: string | undefined;
+	socketIo: Socket;
+	sendMessage: (body: string, replyId?: string) => void;
 	back: () => void;
 	className?: string;
 };
 
-export default function ChatSection({ chatId, back, className }: Props) {
+export default function ChatSection({ chatId, socketIo, sendMessage, back, className }: Props) {
 	// Chat Body
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -75,7 +78,9 @@ export default function ChatSection({ chatId, back, className }: Props) {
 						pauseOnHover: false
 					});
 				} else {
-					loadHistory();
+					loadHistory().then(() => {
+						setTimeout(() => scrollToEnd(containerRef), 150);
+					});
 				}
 			},
 			onError() {
@@ -91,11 +96,7 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	);
 
 	const loadCount = 15;
-	const {
-		data: _,
-		refetch: loadHistory,
-		isLoading
-	} = useQuery(
+	const { data: _, refetch: loadHistory } = useQuery(
 		[`${chatId}-${historyDate}`],
 		() => GetChatHistory(chatId!, historyDate, loadCount),
 		{
@@ -167,23 +168,17 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		}
 	);
 
-	const { mutate: sendMessage } = useMutation(
-		({ body, replyId }: { body: string; replyId?: string }) =>
-			SendChatMessage(chatId!, body, replyId),
-		{
-			onSuccess() {}
-		}
-	);
-
 	const sendNewMessage = () => {
 		if (newMessage.trim().length === 0) return;
 
-		sendMessage({ body: newMessage.trim(), replyId: replyMessage?.id });
+		const body = newMessage.trim();
+		const replyId = replyMessage?.id;
+		sendMessage(body, replyId);
 
 		setNewMessage("");
 		setReplyMessage(undefined);
 
-		setTimeout(() => scrollToEnd(containerRef), 100);
+		setTimeout(() => scrollToEnd(containerRef), 150);
 	};
 
 	const closeContextMenu = () => {
@@ -206,11 +201,29 @@ export default function ChatSection({ chatId, back, className }: Props) {
 	}, [chatId]);
 
 	useEffect(() => {
-		console.log(historyIsVisible);
 		if (historyIsVisible) {
+			console.log(historyDate);
 			loadHistory();
 		}
 	}, [historyIsVisible]);
+
+	useLayoutEffect(() => {
+		socketIo.on("receive-message", (body: string, replyId?: string) => {
+			console.log(body, replyId);
+			setMessages((m) => [
+				...m,
+				{
+					body: body,
+					replyTo: replyId,
+					sendDate: new Date().toISOString(),
+					sender: {
+						username: "mmhejazi"
+					},
+					id: ""
+				}
+			]);
+		});
+	}, []);
 
 	if (chatId === undefined) {
 		return (

@@ -246,7 +246,6 @@ export const getChatHistory: RequestHandler = (req, res, next) => {
 			res.status(200).json({
 				status: "success",
 				data: messages.reduce((acc: any[], message) => {
-					console.log(message.replyTo);
 					acc.push({
 						id: message._id,
 						chatId: message.chatId,

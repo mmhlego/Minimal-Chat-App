@@ -9,7 +9,7 @@ export async function GetChatsList(): Promise<ResponseWrapper<ChatInfo[]>> {
 	return response.data;
 }
 
-export async function NewChat(
+export async function CreateNewChat(
 	name: string,
 	type: ChatTypes,
 	members: string[]

@@ -1,13 +1,15 @@
 import { useState } from "react";
-import ChatSection from "../components/ChatSection";
+import { io } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
 import ChatList from "../components/ChatList";
+import ChatSection from "../components/ChatSection";
+import CreateChat from "../popups/CreateChat";
 import ProfilePopup from "../popups/ProfilePopup";
-import { io } from "socket.io-client";
 
 export default function HomePage() {
 	const [selectedChat, setSelectedChat] = useState<string | undefined>(undefined);
 	const [profileVisible, setProfileVisible] = useState(false);
+	const [createVisible, setCreateVisible] = useState(false);
 
 	const socketIo = io("http://localhost:3000", {
 		// auth: { //TODO
@@ -21,14 +23,15 @@ export default function HomePage() {
 
 	const selectChat = (id: string | undefined) => {
 		setSelectedChat((prev) => {
-			if (prev !== undefined) {
-			}
-
-			if (id !== undefined) {
-			}
+			socketIo.emit("leave-conversation", prev);
+			socketIo.emit("join-conversation", id);
 
 			return id;
 		});
+	};
+
+	const sendMessage = (body: string, replyId?: string) => {
+		socketIo.emit("send-message", body, replyId);
 	};
 
 	return (
@@ -37,6 +40,7 @@ export default function HomePage() {
 			onContextMenu={(e) => e.preventDefault()}>
 			<ChatList
 				openProfile={() => setProfileVisible(true)}
+				openCreateChat={() => setCreateVisible(true)}
 				setChatId={selectChat}
 				selectedChatId={selectedChat}
 			/>
@@ -44,6 +48,8 @@ export default function HomePage() {
 			<ChatSection
 				chatId={selectedChat}
 				back={() => selectChat(undefined)}
+				sendMessage={sendMessage}
+				socketIo={socketIo}
 				className={twMerge(
 					"w-full h-screen absolute md:relative",
 					selectedChat !== undefined ? "left-0" : "left-[100vw] md:left-0"
@@ -51,6 +57,8 @@ export default function HomePage() {
 			/>
 
 			<ProfilePopup visible={profileVisible} closePopup={() => setProfileVisible(false)} />
+
+			<CreateChat visible={createVisible} closePopup={() => setCreateVisible(false)} />
 		</div>
 	);
 }

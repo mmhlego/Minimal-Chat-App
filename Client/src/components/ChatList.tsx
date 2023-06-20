@@ -11,10 +11,16 @@ import { toast } from "react-toastify";
 type Props = {
 	selectedChatId?: string;
 	openProfile: () => void;
+	openCreateChat: () => void;
 	setChatId: (id: string) => void;
 };
 
-export default function ChatList({ selectedChatId, openProfile, setChatId }: Props) {
+export default function ChatList({
+	selectedChatId,
+	openProfile,
+	openCreateChat,
+	setChatId
+}: Props) {
 	const [searchText, setSearchText] = useState("");
 
 	const [chatList, setChatList] = useState<ChatInfo[]>([]);
@@ -22,7 +28,7 @@ export default function ChatList({ selectedChatId, openProfile, setChatId }: Pro
 
 	const { data: _ } = useQuery(["chats"], () => GetChatsList(), {
 		cacheTime: 0,
-		refetchInterval: 1000,
+		// refetchInterval: 1000, //TODO
 		onSuccess(res) {
 			if (res.status === "success") {
 				setChatList(res.data);
@@ -46,7 +52,13 @@ export default function ChatList({ selectedChatId, openProfile, setChatId }: Pro
 	return (
 		<div className="relative h-screen min-h-min flex flex-col">
 			<Header openProfile={openProfile} setSearchText={setSearchText} />
-			<NewChatButton />
+
+			<Button
+				className="p-1 rounded-full absolute right-4 bottom-4"
+				accent="cyan"
+				onClick={openCreateChat}>
+				<Add variant="Outline" size={36} />
+			</Button>
 
 			<div className="w-full h-full overflow-y-auto blue-scroll">
 				{filteredList.length === 0 && (
@@ -57,13 +69,5 @@ export default function ChatList({ selectedChatId, openProfile, setChatId }: Pro
 				))}
 			</div>
 		</div>
-	);
-}
-
-function NewChatButton() {
-	return (
-		<Button className="p-1 rounded-full absolute right-4 bottom-4" accent="cyan">
-			<Add variant="Outline" size={36} />
-		</Button>
 	);
 }

@@ -39,6 +39,7 @@ export default function Button({
 				noBorder ? "m-[2px]" : "border-2",
 				secondary ? secondaryStyle : primaryStyle,
 				disabled ? "cursor-not-allowed grayscale" : "",
+				color === "white" ? "text-blue" : "",
 				className
 			)}>
 			{text}

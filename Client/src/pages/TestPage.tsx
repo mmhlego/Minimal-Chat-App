@@ -59,7 +59,7 @@ export default function TestPage() {
 					fromUser={false}
 					selectMessage={console.log}
 					chatId={""}
-					chatType="Group"
+					chatType="group"
 				/>
 				<Message
 					message={{
@@ -75,7 +75,7 @@ export default function TestPage() {
 					fromUser={true}
 					selectMessage={console.log}
 					chatId={""}
-					chatType="Group"
+					chatType="group"
 				/>
 			</TestSection>
 		</div>

@@ -7,4 +7,4 @@ export default interface ChatInfo {
 	type: ChatTypes;
 }
 
-export type ChatTypes = "Group" | "Private";
+export type ChatTypes = "group" | "private";

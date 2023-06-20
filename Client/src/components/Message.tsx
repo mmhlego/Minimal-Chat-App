@@ -45,20 +45,20 @@ export default function Message({ chatId, chatType, message, fromUser, selectMes
 				selectMessage(message.id);
 			}}>
 			{message.replyTo && (
-				<p
+				<div
 					className={twMerge(
 						"gap-4 italic text-sm text-center ellipsis px-2 py-1 rounded-t-xl rounded-b -mt-1 mb-1 -mx-1",
 						fromUser ? replyFromUserStyle : replyOtherUserStyle
 					)}>
 					{replyMessage?.status === "success" ? (
 						<>
-							<Back className="inline-block mr-2" size={20} />
+							<Back className="inline-block mr-2 -mt-1" size={20} />
 							{replyMessage.data.body}
 						</>
 					) : (
 						<Loading className="inline-block w-4 h-4 -mb-1" size="small" />
 					)}
-				</p>
+				</div>
 			)}
 			<p>{message.body}</p>
 		</div>

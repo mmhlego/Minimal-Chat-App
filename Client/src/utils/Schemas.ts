@@ -17,5 +17,5 @@ export const ProfileFormSchema = z.object({
 	email: z.string().email(),
 	firstName: z.string().min(2),
 	lastName: z.string().min(2),
-	avatar: z.string().url().or(z.string().length(0))
+	avatarUrl: z.string().url().or(z.string().length(0))
 });
