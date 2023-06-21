@@ -99,21 +99,21 @@ mongoose
 			});
 
 			// Get the room number from the client.
-			const roomNumber: string | undefined = socket.handshake.query
-				.roomNumber as string;
+			let roomNumber: string | null;
 			// Join room for specific users.
-			const room = `room-userId-${roomNumber}`;
-			socket.join(room);
+			// const room = `room-userId-${roomNumber}`;
+			// socket.join(room);
 
 			socket.on("join-conversation", (roomId: string | null) => {
 				console.log("join-conversation", roomId);
+				roomNumber = `room-userId-${roomId}`;
 				if (roomId) socket.join(`room-userId-${roomId}`);
 			});
 
 			socket.on("leave-conversation", (roomId: string | null) => {
 				console.log("leave-conversation", roomId);
-				// if (roomId) socket.leave(`room-userId-${roomId}`);
-				if (roomId) socket.disconnect();
+				if (roomId) socket.leave(`room-userId-${roomId}`);
+				// if (roomId) socket.disconnect();
 			});
 
 			/**
@@ -142,7 +142,7 @@ mongoose
 							chat.lastSendDate = new Date();
 							chat.save();
 
-							socketIo.to(room).emit("receive-message", {
+							socketIo.to(roomNumber!).emit("receive-message", {
 								id: message._id,
 								body: message.body,
 								replyTo: message.replyTo,

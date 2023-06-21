@@ -46,12 +46,17 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 	const userId = (req as CustomReq).userId;
 	const user = await User.findOne({ _id: userId }).populate({
 		path: "chatIds",
-		populate: {
-			path: "unreadMessageCount",
-			populate: {
-				path: "lastSeenMessage",
+		populate: [
+			{
+				path: "unreadMessageCount",
+				populate: {
+					path: "lastSeenMessage",
+				},
 			},
-		},
+			{
+				path: "memberIds",
+			},
+		],
 	});
 	// console.log(user);
 
@@ -77,11 +82,22 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 				$gt: lastSeenDate,
 			},
 		}).count();
+		let chatName = "";
+		if (chat.type === "private") {
+			chat.memberIds.forEach((e: any) => {
+				if (!e._id.equals(new Types.ObjectId(userId))) {
+					chatName = e.username;
+					return;
+				}
+			});
+		} else {
+			chatName = chat.name;
+		}
 
 		const asyncAcc = await accumulator;
 		asyncAcc.push({
 			chatId: chat._id,
-			name: chat.name,
+			name: chatName,
 			type: chat.type,
 			unreadMessageCount: count,
 			lastMessage: chat.lastMessage,

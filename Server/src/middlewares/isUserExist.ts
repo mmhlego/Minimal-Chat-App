@@ -1,18 +1,17 @@
 import { RequestHandler } from "express";
 import User from "../models/user";
 
-export const isUserExist: RequestHandler = (req, res, next) => {
+export const isUserExist: RequestHandler = async (req, res, next) => {
 	const members = req.body.members;
-	members.forEach((member: string) => {
-		User.findOne({ username: member })
-			.then((result) => {
-				if (!result) {
-					throw new Error(member + " not found!");
-				}
-			})
-			.catch((err) => {
-				next(err);
-			});
-	});
-	next();
+	let err = false;
+	await await Promise.all(
+		members.map(async (member: string) => {
+			const user = await User.findOne({ username: member });
+			if (!user) {
+				err = true;
+				next(new Error(member + " not found!"));
+			}
+		})
+	);
+	if (!err) next();
 };
