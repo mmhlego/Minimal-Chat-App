@@ -190,6 +190,20 @@ export default function ChatSection({ chatId, back, className }: Props) {
 		setHistoryAvailable(true);
 		setMessages([]);
 
+		if (socket && chatId) {
+			console.log("connect");
+			socket.off("receive-message");
+			socket.on("receive-message", (newMessage: ChatMessage) => {
+				if (!messages.find((m) => m.id === newMessage.id)) {
+					setMessages((m) => [...m, newMessage]);
+
+					seenMessage({ cId: newMessage.chatId!, mId: newMessage.id });
+
+					setTimeout(() => scrollToEnd(containerRef), 150);
+				}
+			});
+		}
+
 		if (chatId !== undefined) {
 			getChatInfo();
 		}
@@ -203,22 +217,6 @@ export default function ChatSection({ chatId, back, className }: Props) {
 			loadHistory();
 		}
 	}, [historyIsVisible]);
-
-	useEffect(() => {
-		if (socket && chatId) {
-			console.log("connect");
-
-			socket.on("receive-message", (newMessage: ChatMessage) => {
-				setMessages((m) => [...m, newMessage]);
-
-				console.log(newMessage);
-
-				seenMessage({ cId: newMessage.chatId!, mId: newMessage.id });
-
-				setTimeout(() => scrollToEnd(containerRef), 150);
-			});
-		}
-	}, [chatId]);
 
 	if (chatId === undefined) {
 		return (
@@ -305,18 +303,20 @@ export default function ChatSection({ chatId, back, className }: Props) {
 				)}
 
 				{/* {messages.slice(0, -1).map((m) => ( */}
-				{messages.map((m) => (
-					<div key={m.id} ref={endRef} className="w-full flex flex-col">
-						<Message
-							key={m.id}
-							chatId={chatInfo.data.chatId}
-							chatType={chatInfo.data.type}
-							message={m}
-							fromUser={m.sender.username === username}
-							selectMessage={setSelectedMessage}
-						/>
-					</div>
-				))}
+				{messages.map((m) => {
+					return (
+						<div key={m.id} ref={endRef} className="w-full flex flex-col">
+							<Message
+								key={m.id}
+								chatId={chatInfo.data.chatId}
+								chatType={chatInfo.data.type}
+								message={m}
+								fromUser={m.sender.username === username}
+								selectMessage={setSelectedMessage}
+							/>
+						</div>
+					);
+				})}
 
 				{/* Scroll To End */}
 				<Button
