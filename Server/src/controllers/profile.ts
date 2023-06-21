@@ -39,22 +39,23 @@ export const updateProfile: RequestHandler = (req, res, next) => {
 	const email = req.body.email;
 	const firstName = req.body.firstName;
 	const lastName = req.body.lastName;
-	const password = req.body.password;
+	// const password = req.body.password;
 	const avatarUrl = req.body.avatarUrl;
-	bcrypt
-		.hash(password, 12)
-		.then((hashedPw) => {
-			return User.updateOne(
-				{ _id: userId },
-				{
-					email,
-					firstName,
-					lastName,
-					avatarUrl,
-					password: hashedPw,
-				}
-			);
-		})
+	// bcrypt
+	// 	.hash(password, 12)
+	// 	.then((hashedPw) => {
+	// 		return
+	User.updateOne(
+		{ _id: userId },
+		{
+			email,
+			firstName,
+			lastName,
+			avatarUrl,
+			// password: hashedPw,
+		}
+	)
+		// })
 		.then(() => {
 			res.status(200).json({
 				status: "success",

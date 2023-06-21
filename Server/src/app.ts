@@ -49,7 +49,7 @@ app.use(
 
 mongoose
 	.connect(
-		"mongodb+srv://admin:PPkvLoUuzZsd9b8j@cluster0.nvbpkxk.mongodb.net/?retryWrites=true&w=majority"
+		"mongodb://root:PRFTfVXkR1z6Ecp8UDMreAk3cADVYPUC@608686a2-2f26-4e59-a286-58567dc147e9.hsvc.ir:30110"
 	)
 	.then((result) => {
 		const server = app.listen(port, () => {
