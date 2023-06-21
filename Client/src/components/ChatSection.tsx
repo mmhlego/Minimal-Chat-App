@@ -9,7 +9,7 @@ import {
 	Send,
 	TrushSquare
 } from "iconsax-react";
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import { Socket } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
@@ -23,16 +23,17 @@ import ChatIcon from "./ChatIcon";
 import Loading from "./Loading";
 import Message from "./Message";
 import { GetProfile } from "../api/AuthApis";
+import { MainContext } from "../context/MainContext";
 
 type Props = {
 	chatId: string | undefined;
-	socketIo: Socket;
-	sendMessage: (body: string, replyId?: string) => void;
+	// socketIo: Socket;
+	// sendMessage: (body: string, replyId?: string) => void;
 	back: () => void;
 	className?: string;
 };
 
-export default function ChatSection({ chatId, socketIo, sendMessage, back, className }: Props) {
+export default function ChatSection({ chatId, back, className }: Props) {
 	// Chat Body
 	const [messages, setMessages] = useState<ChatMessage[]>([]);
 	const containerRef = useRef<HTMLDivElement>(null);
@@ -49,6 +50,8 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 	// Context Menu
 	const [selectedMessage, setSelectedMessage] = useState<string>();
 	const [contextVisible, setContextVisible] = useState(false);
+	const { socket } = useContext(MainContext);
+
 	const contextPos = useMemo(() => {
 		if (!selectedMessage) return { x: undefined, y: undefined };
 
@@ -164,7 +167,8 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 
 		const body = newMessage.trim();
 		const replyId = replyMessage?.id;
-		sendMessage(body, replyId);
+		// sendMessage(body, replyId);
+		if (socket) socket.emit("send-message", body, chatId, replyId);
 
 		setNewMessage("");
 		setReplyMessage(undefined);
@@ -200,17 +204,21 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 		}
 	}, [historyIsVisible]);
 
-	useLayoutEffect(() => {
-		socketIo.on("receive-message", (newMessage: ChatMessage) => {
-			setMessages((m) => [...m, newMessage]);
+	useEffect(() => {
+		if (socket && chatId) {
+			console.log("connect");
 
-			console.log(newMessage);
+			socket.on("receive-message", (newMessage: ChatMessage) => {
+				setMessages((m) => [...m, newMessage]);
 
-			seenMessage({ cId: newMessage.chatId!, mId: newMessage.id });
+				console.log(newMessage);
 
-			setTimeout(() => scrollToEnd(containerRef), 150);
-		});
-	}, []);
+				seenMessage({ cId: newMessage.chatId!, mId: newMessage.id });
+
+				setTimeout(() => scrollToEnd(containerRef), 150);
+			});
+		}
+	}, [chatId]);
 
 	if (chatId === undefined) {
 		return (
@@ -266,7 +274,10 @@ export default function ChatSection({ chatId, socketIo, sendMessage, back, class
 				)}>
 				<Button
 					accent="cyan"
-					onClick={back}
+					onClick={() => {
+						back();
+						socket?.emit("leave-conversation", chatId);
+					}}
 					className="bg-transparent shadow-none -ml-1 -mr-2">
 					<Back />
 				</Button>

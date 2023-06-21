@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useContext, useEffect, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { io } from "socket.io-client";
 import { twMerge } from "tailwind-merge";
@@ -7,17 +7,29 @@ import ChatList from "../components/ChatList";
 import ChatSection from "../components/ChatSection";
 import CreateChatPopup from "../popups/CreateChatPopup";
 import ProfilePopup from "../popups/ProfilePopup";
+import { MainContext } from "../context/MainContext";
 
 export default function HomePage() {
 	const [selectedChat, setSelectedChat] = useState<string | undefined>(undefined);
 	const [profileVisible, setProfileVisible] = useState(false);
 	const [createVisible, setCreateVisible] = useState(false);
+	const { socket, setSocket } = useContext(MainContext);
 
 	const navigate = useNavigate();
 
 	useEffect(() => {
 		const token = localStorage.getItem("jwt");
-
+		if (!socket) {
+			const socketIo = io("http://localhost:3000", {
+				auth: {
+					token: `Bearer ${localStorage.getItem("jwt")}`
+				}
+				// query: {
+				// 	roomNumber: selectedChat
+				// }
+			});
+			setSocket(socketIo);
+		}
 		if (!token) {
 			navigate("/login");
 		}
@@ -31,27 +43,18 @@ export default function HomePage() {
 		}
 	}, []);
 
-	const socketIo = io("http://localhost:3000", {
-		auth: {
-			token: `Bearer ${localStorage.getItem("jwt")}`
-		},
-		query: {
-			roomNumber: selectedChat
-		}
-	});
-
 	const selectChat = (id: string | undefined) => {
 		setSelectedChat((prev) => {
-			socketIo.emit("leave-conversation", prev);
-			socketIo.emit("join-conversation", id);
+			if (prev) socket?.emit("leave-conversation", prev);
+			if (id) socket?.emit("join-conversation", id);
 
 			return id;
 		});
 	};
 
 	const sendMessage = (body: string, replyId?: string) => {
-		const chatId = selectedChat;
-		socketIo.emit("send-message", body, chatId, replyId);
+		// const chatId = selectedChat;
+		// socketIo.emit("send-message", body, chatId, replyId);
 	};
 
 	return (
@@ -68,8 +71,8 @@ export default function HomePage() {
 			<ChatSection
 				chatId={selectedChat}
 				back={() => selectChat(undefined)}
-				sendMessage={sendMessage}
-				socketIo={socketIo}
+				// sendMessage={sendMessage}
+				// socketIo={socketIo}
 				className={twMerge(
 					"w-full h-screen absolute md:relative",
 					selectedChat !== undefined ? "left-0" : "left-[100vw] md:left-0"
