@@ -119,14 +119,28 @@ export const getChatList: RequestHandler = async (req, res, next) => {
 
 export const getChat: RequestHandler = (req, res, next) => {
 	const chatId = req.params.chatId;
+	const userId = (req as CustomReq).userId;
 	Chat.findOne({ _id: chatId })
+		.populate("memberIds")
 		.then((chat) => {
 			if (!chat) throw new Error("chat id is not valid!");
+			let chatName = "";
+			if (chat.type === "private") {
+				chat.memberIds.forEach((e: any) => {
+					if (!e._id.equals(new Types.ObjectId(userId))) {
+						chatName = e.username;
+						return;
+					}
+				});
+			} else {
+				chatName = chat.name;
+			}
+			console.log(chatName);
 			res.status(200).json({
 				status: "success",
 				data: {
 					chatId: chat._id,
-					name: chat.name,
+					name: chatName,
 					type: chat.type,
 					// unreadMessageCount: ,
 					lastMessage: chat.lastMessage,
