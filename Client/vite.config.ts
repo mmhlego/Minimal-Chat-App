@@ -5,7 +5,12 @@ import react from "@vitejs/plugin-react";
 export default defineConfig({
 	plugins: [react()],
 	server: {
-		open: true,
-		port: 4000
+		// open: true,
+		// watch: {
+		// 	usePolling: true
+		// },
+		host: "0.0.0.0", // needed for the Docker Container port mapping to work
+		// strictPort: true,
+		port: 5173 // you can replace this port with any port
 	}
 });
