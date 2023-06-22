@@ -35,14 +35,12 @@ export async function GetProfile(): Promise<ResponseWrapper<User>> {
 }
 
 export async function UpdateProfile(
-	username: string,
 	email: string,
 	firstName: string,
 	lastName: string,
 	avatarUrl?: string
 ): Promise<ResponseWrapper<string>> {
 	const response = await axios.put("/", {
-		username,
 		email,
 		firstName,
 		lastName,

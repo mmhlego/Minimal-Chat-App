@@ -52,14 +52,7 @@ export default function ProfilePopup({ visible, closePopup }: Props) {
 	});
 
 	const { mutate: updateProfile } = useMutation(
-		() =>
-			UpdateProfile(
-				profile.username,
-				profile.email,
-				profile.firstName,
-				profile.lastName,
-				profile.avatarUrl
-			),
+		() => UpdateProfile(profile.email, profile.firstName, profile.lastName, profile.avatarUrl),
 		{
 			onSuccess(res) {
 				if (res.status === "success") {
